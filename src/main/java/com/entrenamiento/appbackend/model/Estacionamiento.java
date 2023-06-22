@@ -1,6 +1,6 @@
 package com.entrenamiento.appbackend.model;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 
@@ -10,13 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Estacionamiento {
 	
@@ -25,18 +19,76 @@ public class Estacionamiento {
 	private Long id;
 	
 	@CreatedDate
-	private Date inicio;
+	private LocalDateTime inicio;
 	
-	private Date fin;
+	private LocalDateTime fin;
 	
 	private double importe;
 	
 	@OneToOne
-	@JoinColumn(name="id_patente")
+	@JoinColumn(name="idPatente")
 	private Patente patente;
 	
 	@OneToOne
-	@JoinColumn(name="id_usuario")
+	@JoinColumn(name="idUsuario")
 	private Usuario usuario;
+
+	public Estacionamiento() {
+		super();
+	}
+
+	public Estacionamiento(Long id, LocalDateTime inicio, LocalDateTime fin, double importe, Patente patente, Usuario usuario) {
+		super();
+		this.id = id;
+		this.inicio = inicio;
+		this.fin = fin;
+		this.importe = importe;
+		this.patente = patente;
+		this.usuario = usuario;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public LocalDateTime getInicio() {
+		return inicio;
+	}
+
+	public void setInicio(LocalDateTime inicio) {
+		this.inicio = inicio;
+	}
+
+	public LocalDateTime getFin() {
+		return fin;
+	}
+
+	public void setFin(LocalDateTime fin) {
+		this.fin = fin;
+	}
+
+	public double getImporte() {
+		return importe;
+	}
+
+	public void setImporte(double importe) {
+		this.importe = importe;
+	}
+
+	public Patente getPatente() {
+		return patente;
+	}
+
+	public void setPatente(Patente patente) {
+		this.patente = patente;
+	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
 	
 }

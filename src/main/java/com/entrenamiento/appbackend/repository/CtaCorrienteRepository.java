@@ -7,6 +7,8 @@ import com.entrenamiento.appbackend.model.CtaCorriente;
 
 @Repository
 public interface CtaCorrienteRepository extends JpaRepository<CtaCorriente, Long>{
-
+	
+	CtaCorriente findByUsuarioCelular(String celular);
+	
 }
 

@@ -7,14 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Usuario {
 	
@@ -28,17 +21,47 @@ public class Usuario {
 	@ManyToMany
 	@JoinTable( 
 			name="usuario_patente",
-			joinColumns=@JoinColumn(name="id_usuario"),
-			inverseJoinColumns=@JoinColumn(name="id_patente")
+			joinColumns=@JoinColumn(name="idUsuario"),
+			inverseJoinColumns=@JoinColumn(name="idPatente")
 			)
 	private Set<Patente> patentes;
 	
-	@OneToOne
-	@JoinColumn(name="id_cta")
-	private CtaCorriente cuenta;
-	
+	public Usuario() {
+		super();
+	}
+
+	public Usuario(String celular, String contraseña, Set<Patente> patentes) {
+		super();
+		this.celular = celular;
+		this.contraseña = contraseña;
+		this.patentes = patentes;
+	}
+
 	public void addPatente(Patente patente) {
 		this.patentes.add(patente);
+	}
+	public String getCelular() {
+		return celular;
+	}
+
+	public void setCelular(String celular) {
+		this.celular = celular;
+	}
+
+	public String getContraseña() {
+		return contraseña;
+	}
+
+	public void setContraseña(String contraseña) {
+		this.contraseña = contraseña;
+	}
+
+	public Set<Patente> getPatentes() {
+		return patentes;
+	}
+
+	public void setPatentes(Set<Patente> patentes) {
+		this.patentes = patentes;
 	}
 	
 }

@@ -4,13 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Patente {
 	
@@ -19,5 +13,27 @@ public class Patente {
 	private Long id;
 	
 	private String cadena;
+
+	public Patente(Long id, String cadena) {
+		super();
+		this.id = id;
+		this.cadena = cadena;
+	}
+
+	public Patente() {
+		super();
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getCadena() {
+		return cadena;
+	}
+
+	public void setCadena(String cadena) {
+		this.cadena = cadena;
+	}
 	
 }
