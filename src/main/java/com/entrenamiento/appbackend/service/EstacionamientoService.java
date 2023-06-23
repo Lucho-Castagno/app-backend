@@ -2,7 +2,6 @@ package com.entrenamiento.appbackend.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +13,6 @@ import com.entrenamiento.appbackend.exceptions.CtaCorrienteNotFoundException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Estacionamiento;
 import com.entrenamiento.appbackend.model.Patente;
-import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.repository.CtaCorrienteRepository;
 import com.entrenamiento.appbackend.repository.EstacionamientoRepository;
 
@@ -44,7 +42,7 @@ public class EstacionamientoService {
 		}
 		
 		CtaCorriente ctaCorriente = this.ctaCorrienteRepository.findByUsuarioCelular(celular);
-		if (ctaCorriente.equals(null)) {
+		if (ctaCorriente == null) {
 			throw new CtaCorrienteNotFoundException("Cuenta Corriente no encontrada.");
 		}
 		if (ctaCorriente.getSaldo() < 10.0) {

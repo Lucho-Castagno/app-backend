@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.entrenamiento.appbackend.model.Estacionamiento;
 import com.entrenamiento.appbackend.model.Patente;
-import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.service.EstacionamientoService;
 
 
@@ -38,8 +37,8 @@ public class EstacionamientoController {
 		return this.estacionamientoService.estacionamientoPorId(id);
 	}
 	
-	@PostMapping("/iniciar")
-	public ResponseEntity<String> iniciarEstacionamiento(@PathVariable String celular, @RequestBody Patente patente) {
+	@PostMapping("/iniciar/{celular}")
+	public ResponseEntity<String> iniciarEstacionamiento(@PathVariable("celular") String celular, @RequestBody Patente patente) {
 		try {
 			this.estacionamientoService.iniciarEstacionamiento(celular, patente);
 			return ResponseEntity.ok("El estacionamiento inició con exito!");

@@ -10,32 +10,38 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
-import com.entrenamiento.appbackend.repository.UsuarioRepository;
+import com.entrenamiento.appbackend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 	
-	private final UsuarioRepository usuarioRepository;
+	private final UsuarioService usuarioService;
 	
-	public UsuarioController(UsuarioRepository usuarioRepository) {
-		this.usuarioRepository = usuarioRepository;
+	public UsuarioController(UsuarioService usuarioService) {
+		this.usuarioService = usuarioService;
 	}
 	
 	@GetMapping("")
 	public List<Usuario> obtenerUsuarios() {
-		return usuarioRepository.findAll();
+		return usuarioService.usuarios();
+	}
+	
+	@GetMapping("/{celular}/patentes")
+	public List<Patente> obtenerPatentesUsuario(@PathVariable("celular") String celular) {
+		return usuarioService.obtenerPatentesUsuario(celular);
 	}
 	
 	@GetMapping("/{celular}")
 	public Optional<Usuario> obtenerUsuario(@PathVariable String celular) {
-		return usuarioRepository.findById(celular);
+		return usuarioService.usuarioPorId(celular);
 	}
 	
 	@PostMapping("")
 	public Usuario crearUsuario(@RequestBody Usuario usuario) {
-		return this.usuarioRepository.save(usuario);
+		return this.usuarioService.crearUsuario(usuario);
 	}
 	
 }
