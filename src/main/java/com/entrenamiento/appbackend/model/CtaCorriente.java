@@ -10,7 +10,7 @@ import jakarta.persistence.OneToOne;
 public class CtaCorriente {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO )
+	@GeneratedValue(strategy = GenerationType.IDENTITY )
 	private Long id;
 	
 	private double saldo = 10000.0;

@@ -18,7 +18,7 @@ import jakarta.persistence.OneToOne;
 public class Estacionamiento {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@CreatedDate

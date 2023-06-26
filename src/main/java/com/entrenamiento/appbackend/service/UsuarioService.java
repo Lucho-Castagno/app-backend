@@ -43,7 +43,7 @@ public class UsuarioService {
 	public List<Patente> obtenerPatentesUsuario(String celular) {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		if (usuario.isPresent()) {
-			return (List<Patente>) usuario.get().getPatentes();
+			return usuario.get().getPatentes();
 		} else {
 			throw new UsuarioNotFoundException("No se encontro al usuario.");
 		}

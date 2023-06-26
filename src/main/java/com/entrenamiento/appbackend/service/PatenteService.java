@@ -27,10 +27,9 @@ public class PatenteService {
 	public Patente crearPatente(String cadena, Usuario usuario) {
 		
 		Patente patente = new Patente(cadena);
+		this.patenteRepository.save(patente);
 		
 		usuario.addPatente(patente);
-		
-		this.patenteRepository.save(patente);
 		this.usuarioRepository.save(usuario);
 		
 		return patente;
