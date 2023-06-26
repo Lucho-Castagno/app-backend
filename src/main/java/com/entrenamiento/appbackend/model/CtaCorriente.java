@@ -46,5 +46,13 @@ public class CtaCorriente {
 	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
 	}
+
+	public void consumo(double importeTotal) {
+		this.saldo = this.saldo - importeTotal;
+	}
+	
+	public void cargarCredito(double credito) {
+		this.saldo = this.saldo + credito;
+	}
 	
 }

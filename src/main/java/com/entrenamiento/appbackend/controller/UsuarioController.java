@@ -15,7 +15,7 @@ import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.service.UsuarioService;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/usuarios")
 public class UsuarioController {
 	
 	private final UsuarioService usuarioService;

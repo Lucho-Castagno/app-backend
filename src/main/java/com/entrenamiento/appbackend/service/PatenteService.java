@@ -1,7 +1,9 @@
 package com.entrenamiento.appbackend.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.model.Patente;
@@ -24,15 +26,45 @@ public class PatenteService {
 		return this.patenteRepository.findAll();
 	}
 
-	public Patente crearPatente(String cadena, Usuario usuario) {
+	public ResponseEntity<String> crearPatente(String celular, String cadena) {
 		
-		Patente patente = new Patente(cadena);
-		this.patenteRepository.save(patente);
+		if (!validarCadenaPatente(cadena)) {
+			return ResponseEntity.badRequest().body("La patente solo puede ser de dos tipos: 'AAA000' ó 'AA000AA'.");
+		}
 		
-		usuario.addPatente(patente);
-		this.usuarioRepository.save(usuario);
+		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
-		return patente;
+		if (usuario.isEmpty()) {
+			return ResponseEntity.badRequest().body("No se encontro al usuario.");
+		}
+		
+		// este for es para verificar si la patente ya esta asociada al usuario.
+		for (Patente patente : usuario.get().getPatentes()) {
+			if (patente.getCadena().equals(cadena)) {
+				return ResponseEntity.badRequest().body("La patente que se indicó ya esta asociada al usuario.");
+			}
+		}
+		
+		// verificamos si la patente ya existe, si existe no la creamos de vuelta sino que asociamos la patente con
+		// el usuario, en cambio, si no existe la creamos y asociamos con el usuario.
+		
+		Optional<Patente> patente = patenteRepository.findByCadena(cadena);
+		
+		if (patente.isEmpty()) {
+			Patente patenteNueva = new Patente(cadena);
+			usuario.get().addPatente(patenteNueva);
+		} else {
+			usuario.get().addPatente(patente.get());
+		}
+		
+		this.usuarioRepository.save(usuario.get());
+		
+		return ResponseEntity.ok("Patente creada con exito!");
+	}
+	
+	public boolean validarCadenaPatente(String cadena) {
+		String patron = "^(?:[A-Z]{2,3}\\d{3}|[A-Z]{2}\\d{3}[A-Z]{2})$";
+		return cadena.matches(patron);
 	}
 	
 }
