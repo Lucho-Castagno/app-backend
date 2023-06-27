@@ -1,9 +1,8 @@
 package com.entrenamiento.appbackend.service;
 
-import java.time.LocalDate;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +41,12 @@ public class EstacionamientoService {
 	}
 	
 	public ResponseEntity<String> iniciarEstacionamiento(String celular, String cadena) {
-	
+		
+		LocalDateTime inicio = LocalDateTime.now();
+		if (inicio.toLocalTime().isBefore(HORARIO_APERTURA)) {
+			return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+		}
+		
 		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) {
 			return ResponseEntity.badRequest().body("Ya existe un estacionamiento iniciado por este usuario.");
 		}
@@ -69,6 +73,11 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> finalizarEstacionamiento(Long id) {
 		
+		LocalDateTime fin = LocalDateTime.now();
+		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) {
+			return ResponseEntity.badRequest().body("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
+		}
+		
 		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
 		
 		if (estacionamientoOpcional.isEmpty()) {
@@ -81,9 +90,6 @@ public class EstacionamientoService {
 			return ResponseEntity.badRequest().body("El estacionamiento indicado ya finalizó.");
 		}
 		
-		// calculo de horas para el importe total
-		// Duration duracionTiempo = Duration.between(estacionamiento.getInicio(), LocalDateTime.now());
-		// duracionTiempo.toHours();
 		long horasTotales = calculoHorasEstacionamiento(estacionamiento.getInicio(), LocalDateTime.now());
 		double importeTotal = 10.0 * horasTotales;
 		
@@ -101,29 +107,25 @@ public class EstacionamientoService {
 	
 	public long calculoHorasEstacionamiento(LocalDateTime inicio, LocalDateTime fin) {
 		
-		LocalDate fechaInicio = inicio.toLocalDate();
-		LocalDate fechaFin = fin.toLocalDate();
+		Duration duracion = Duration.between(inicio, fin);
+		long dias = duracion.toDays();
+		long horas = duracion.toHours();
+		long minutos = duracion.toMinutesPart();
 		
-		LocalTime horaInicio = inicio.toLocalTime();
-		LocalTime horaFin = fin.toLocalTime();
-		
-		if (fechaInicio.equals(fechaFin)) {
-			if (horaInicio.isBefore(HORARIO_APERTURA)) {
-				horaInicio = HORARIO_APERTURA;
-			}
-			if (horaFin.isAfter(HORARIO_CIERRE)) {
-				horaFin = HORARIO_CIERRE;
-			}
-		} else {
-			horaInicio = HORARIO_APERTURA;
-			horaFin = HORARIO_CIERRE;
+		if (minutos > 0) {
+			horas ++;
 		}
 		
-		long horasDuracion = ChronoUnit.HOURS.between(horaInicio, horaFin);
-		horasDuracion = Math.max(0, horasDuracion);
-		
-		return horasDuracion;
-		
+		// para el caso en el que el estacionamiento inicie y termine en el mismo dia
+		if (inicio.toLocalDate().equals(fin.toLocalDate())) {
+			
+			return horas;
+			
+		} else {
+			
+			return (dias * 12) + duracion.toHoursPart();
+			
+		}
 	}
 	
 }
