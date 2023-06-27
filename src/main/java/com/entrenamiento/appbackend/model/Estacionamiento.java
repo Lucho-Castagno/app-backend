@@ -11,7 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -28,12 +28,12 @@ public class Estacionamiento {
 	
 	private double importe;
 	
-	@OneToOne
-	@JoinColumn(name="idPatente")
+	@ManyToOne
+	@JoinColumn(name="id_patente")
 	private Patente patente;
 	
-	@OneToOne
-	@JoinColumn(name="idUsuario")
+	@ManyToOne
+	@JoinColumn(name="celular")
 	private Usuario usuario;
 
 	public Estacionamiento() {

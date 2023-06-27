@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -32,6 +33,9 @@ public class Usuario {
 	@OneToOne
 	@JoinColumn(name = "ctaCorriente")
 	private CtaCorriente ctaCorriente;
+	
+	@OneToMany(mappedBy = "usuario")
+	private List<Estacionamiento> estacionamientos;
 	
 	public Usuario() {
 		super();
