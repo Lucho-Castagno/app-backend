@@ -1,6 +1,6 @@
 package com.entrenamiento.appbackend.service;
 
-import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +23,9 @@ public class EstacionamientoService {
 	private final EstacionamientoRepository estacionamientoRepository;
 	private final CtaCorrienteRepository ctaCorrienteRepository;
 	private final PatenteRepository patenteRepository;
+	
+	public static final LocalTime HORARIO_APERTURA = LocalTime.of(8, 0);
+	public static final LocalTime HORARIO_CIERRE = LocalTime.of(20, 0);
 	
 	public EstacionamientoService(EstacionamientoRepository estacionamientoRepository, CtaCorrienteRepository ctaCorrienteRepository, PatenteRepository patenteRepository) {
 		this.estacionamientoRepository = estacionamientoRepository;
@@ -98,20 +101,28 @@ public class EstacionamientoService {
 	
 	public long calculoHorasEstacionamiento(LocalDateTime inicio, LocalDateTime fin) {
 		
-		// total de horas entre las dos fechas
-		long horasTotales = ChronoUnit.HOURS.between(inicio, fin);
+		LocalDate fechaInicio = inicio.toLocalDate();
+		LocalDate fechaFin = fin.toLocalDate();
 		
-		int horasFueraHorario = 0;
+		LocalTime horaInicio = inicio.toLocalTime();
+		LocalTime horaFin = fin.toLocalTime();
 		
-		if (inicio.getHour() > 8) {
-			horasFueraHorario += (8 - inicio.getHour());
+		if (fechaInicio.equals(fechaFin)) {
+			if (horaInicio.isBefore(HORARIO_APERTURA)) {
+				horaInicio = HORARIO_APERTURA;
+			}
+			if (horaFin.isAfter(HORARIO_CIERRE)) {
+				horaFin = HORARIO_CIERRE;
+			}
+		} else {
+			horaInicio = HORARIO_APERTURA;
+			horaFin = HORARIO_CIERRE;
 		}
 		
-		if (fin.getHour() < 20) {
-			horasFueraHorario += (fin.getHour() - 20);
-		}
+		long horasDuracion = ChronoUnit.HOURS.between(horaInicio, horaFin);
+		horasDuracion = Math.max(0, horasDuracion);
 		
-		return horasTotales - horasFueraHorario;
+		return horasDuracion;
 		
 	}
 	
