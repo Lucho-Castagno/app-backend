@@ -3,6 +3,7 @@ package com.entrenamiento.appbackend.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.exceptions.UsuarioNotFoundException;
@@ -23,13 +24,21 @@ public class UsuarioService {
 		this.ctaCorrienteRepository = ctaCorrienteRepository;
 	}
 	
-	public Usuario crearUsuario(Usuario usuario) {
-		CtaCorriente ctaCorriente = new CtaCorriente();
-		this.ctaCorrienteRepository.save(ctaCorriente);
+	public ResponseEntity<String> crearUsuario(Usuario usuario) {
 		
-		usuario.setCtaCorriente(ctaCorriente);
+		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(usuario.getCelular()); 
+		if (usuarioExiste.isEmpty()) {
+			CtaCorriente ctaCorriente = new CtaCorriente();
+			this.ctaCorrienteRepository.save(ctaCorriente);
+			
+			usuario.setCtaCorriente(ctaCorriente);
+			this.usuarioRepository.save(usuario);
+			
+			return ResponseEntity.ok().body("Usuario registrado con exito!");
+		}
 		
-		return this.usuarioRepository.save(usuario);
+		return ResponseEntity.badRequest().body("El celular que intenta ingresar ya esta registrado en el sistema.");
+ 		
 	}
 
 	public List<Usuario> usuarios() {

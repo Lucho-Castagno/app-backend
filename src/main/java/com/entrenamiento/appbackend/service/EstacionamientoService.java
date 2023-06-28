@@ -107,25 +107,41 @@ public class EstacionamientoService {
 	
 	public long calculoHorasEstacionamiento(LocalDateTime inicio, LocalDateTime fin) {
 		
+		long horas = 0;
+		
 		Duration duracion = Duration.between(inicio, fin);
-		long dias = duracion.toDays();
-		long horas = duracion.toHours();
 		long minutos = duracion.toMinutesPart();
-		
-		if (minutos > 0) {
-			horas ++;
-		}
-		
 		// para el caso en el que el estacionamiento inicie y termine en el mismo dia
 		if (inicio.toLocalDate().equals(fin.toLocalDate())) {
 			
-			return horas;
+			horas = (long) Math.ceil(duracion.toMinutes() / 60);
 			
 		} else {
 			
-			return (dias * 12) + duracion.toHoursPart();
+			long dias = duracion.toDays();
 			
+			Duration duracionPrimerDia = Duration.between(inicio.toLocalTime(), HORARIO_CIERRE);
+			Duration duracionUltimoDia = Duration.between(HORARIO_APERTURA, fin.toLocalTime());
+			
+			if ( dias <= 1) {
+				
+				horas = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / 60);
+			
+			} else {
+				
+				long diasCompletos = (fin.getDayOfMonth() - inicio.getDayOfMonth()) + 1;
+				long diasIntermedios = diasCompletos - 2;
+				long horasCompletas = diasIntermedios * (HORARIO_CIERRE.getHour() - HORARIO_APERTURA.getHour());
+				
+				horas = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / 60) + horasCompletas;
+			}
+
 		}
+		
+		if (minutos > 0) horas ++;
+		
+		return horas;
+		
 	}
 	
 }

@@ -20,6 +20,8 @@ public class Usuario {
 	
 	private String contraseña;
 	
+	private String email;
+	
 	// many to many porque puede que una misma patente (coche) pueda ser usuado por varias personas, y estan tengan diferentes cuentas,
 	// como por ejemplo, un auto compartido por una pareja o una camioneta de entregas utilizada por varios trabajadores.
 	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -41,10 +43,11 @@ public class Usuario {
 		super();
 	}
 
-	public Usuario(String celular, String contraseña) {
+	public Usuario(String celular, String contraseña, String email) {
 		super();
 		this.celular = celular;
 		this.contraseña = contraseña;
+		this.email = email;
 	}
 
 	public void addPatente(Patente patente) {
@@ -80,6 +83,14 @@ public class Usuario {
 	
 	public CtaCorriente getCtaCorriente() {
 		return this.ctaCorriente;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }
