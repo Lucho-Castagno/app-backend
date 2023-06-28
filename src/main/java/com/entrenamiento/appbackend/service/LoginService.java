@@ -17,15 +17,15 @@ public class LoginService {
 		this.usuarioRepository = usuarioRepository;
 	}
 	
-	public ResponseEntity<String> login(String celular, String contraseña) {
+	public ResponseEntity<Usuario> login(String celular, String contraseña) {
 		
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty() || !usuario.get().getContraseña().equals(contraseña)) {
-			return ResponseEntity.badRequest().body("Usuario y/o contraseña incorrectos.");
+			return ResponseEntity.badRequest().body(null);
 		}
 		
-		return ResponseEntity.ok().body("Inicio de sesion exitoso!");
+		return ResponseEntity.ok(usuario.get());
 		
 	}
 	

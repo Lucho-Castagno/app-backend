@@ -3,6 +3,8 @@ package com.entrenamiento.appbackend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,13 +32,16 @@ public class Usuario {
 			joinColumns = @JoinColumn(name = "celular"),
 			inverseJoinColumns = @JoinColumn(name = "idPatente")
 	)
+	@JsonIgnore
 	private List<Patente> patentes = new ArrayList<>();	
 	
 	@OneToOne
 	@JoinColumn(name = "ctaCorriente")
+	@JsonIgnore
 	private CtaCorriente ctaCorriente;
 	
 	@OneToMany(mappedBy = "usuario")
+	@JsonIgnore
 	private List<Estacionamiento> estacionamientos;
 	
 	public Usuario() {

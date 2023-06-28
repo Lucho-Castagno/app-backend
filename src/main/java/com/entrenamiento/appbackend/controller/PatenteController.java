@@ -3,6 +3,7 @@ package com.entrenamiento.appbackend.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import com.entrenamiento.appbackend.service.PatenteService;
 
 @RestController
 @RequestMapping("/patentes")
+@CrossOrigin
 public class PatenteController {
 	
 	private final PatenteService patenteService;
