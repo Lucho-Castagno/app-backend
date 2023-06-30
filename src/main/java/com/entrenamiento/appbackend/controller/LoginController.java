@@ -1,7 +1,6 @@
 package com.entrenamiento.appbackend.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +9,6 @@ import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.service.LoginService;
 
 @RestController
-@CrossOrigin
 public class LoginController {
 	
 	private final LoginService loginService;

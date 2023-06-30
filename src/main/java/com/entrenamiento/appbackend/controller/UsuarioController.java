@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +17,6 @@ import com.entrenamiento.appbackend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/usuarios")
-@CrossOrigin
 public class UsuarioController {
 	
 	private final UsuarioService usuarioService;
@@ -33,7 +31,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("/{celular}/patentes")
-	public List<Patente> obtenerPatentesUsuario(@PathVariable("celular") String celular) {
+	public ResponseEntity<List<Patente>> obtenerPatentesUsuario(@PathVariable("celular") String celular) {
 		return usuarioService.obtenerPatentesUsuario(celular);
 	}
 	

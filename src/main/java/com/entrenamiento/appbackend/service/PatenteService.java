@@ -26,22 +26,22 @@ public class PatenteService {
 		return this.patenteRepository.findAll();
 	}
 
-	public ResponseEntity<String> crearPatente(String celular, String cadena) {
+	public ResponseEntity<Patente> crearPatente(String celular, String cadena) {
 		
 		if (!validarCadenaPatente(cadena)) {
-			return ResponseEntity.badRequest().body("La patente solo puede ser de dos tipos: 'AAA000' ó 'AA000AA'.");
+			return ResponseEntity.badRequest().body(null);
 		}
 		
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty()) {
-			return ResponseEntity.badRequest().body("No se encontro al usuario.");
+			return ResponseEntity.badRequest().body(null);
 		}
 		
 		// este for es para verificar si la patente ya esta asociada al usuario.
 		for (Patente patente : usuario.get().getPatentes()) {
 			if (patente.getCadena().equals(cadena)) {
-				return ResponseEntity.badRequest().body("La patente que se indicó ya esta asociada al usuario.");
+				return ResponseEntity.badRequest().body(null);
 			}
 		}
 		
@@ -53,17 +53,23 @@ public class PatenteService {
 		if (patente.isEmpty()) {
 			Patente patenteNueva = new Patente(cadena);
 			usuario.get().addPatente(patenteNueva);
+			
+			this.usuarioRepository.save(usuario.get());
+			
+			return ResponseEntity.ok(patenteNueva);
 		} else {
 			usuario.get().addPatente(patente.get());
+			
+			this.usuarioRepository.save(usuario.get());
+			
+			return ResponseEntity.ok(patente.get());
 		}
 		
-		this.usuarioRepository.save(usuario.get());
 		
-		return ResponseEntity.ok("Patente creada con exito!");
 	}
 	
 	public boolean validarCadenaPatente(String cadena) {
-		String patron = "^(?:[A-Z]{2,3}\\d{3}|[A-Z]{2}\\d{3}[A-Z]{2})$";
+		String patron = "^[A-Z]{3}\\d{3}$|^[A-Z]{2}\\d{3}[A-Z]{2}$";
 		return cadena.matches(patron);
 	}
 	

@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.entrenamiento.appbackend.exceptions.UsuarioNotFoundException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
@@ -49,12 +48,12 @@ public class UsuarioService {
 		return this.usuarioRepository.findById(celular);
 	}
 
-	public List<Patente> obtenerPatentesUsuario(String celular) {
+	public ResponseEntity<List<Patente>> obtenerPatentesUsuario(String celular) {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		if (usuario.isPresent()) {
-			return usuario.get().getPatentes();
+			return ResponseEntity.ok().body(usuario.get().getPatentes());
 		} else {
-			throw new UsuarioNotFoundException("No se encontro al usuario.");
+			return ResponseEntity.badRequest().body(null);
 		}
 	}
 	
