@@ -33,28 +33,24 @@ public class UsuarioService {
 			usuario.setCtaCorriente(ctaCorriente);
 			this.usuarioRepository.save(usuario);
 			
-			return ResponseEntity.ok().body("Usuario registrado con exito!");
+			return ResponseEntity.ok("Usuario registrado con exito!");
 		}
 		
 		return ResponseEntity.badRequest().body("El celular que intenta ingresar ya esta registrado en el sistema.");
  		
 	}
 
-	public List<Usuario> usuarios() {
-		return this.usuarioRepository.findAll();
+	public ResponseEntity<List<Usuario>> usuarios() {
+		return ResponseEntity.ok(this.usuarioRepository.findAll());
 	}
 
-	public Optional<Usuario> usuarioPorId(String celular) {
-		return this.usuarioRepository.findById(celular);
+	public ResponseEntity<Optional<Usuario>> usuarioPorId(String celular) {
+		return ResponseEntity.ok(this.usuarioRepository.findById(celular));
 	}
 
 	public ResponseEntity<List<Patente>> obtenerPatentesUsuario(String celular) {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
-		if (usuario.isPresent()) {
-			return ResponseEntity.ok().body(usuario.get().getPatentes());
-		} else {
-			return ResponseEntity.badRequest().body(null);
-		}
+		return ResponseEntity.ok(usuario.get().getPatentes());
 	}
 	
 }

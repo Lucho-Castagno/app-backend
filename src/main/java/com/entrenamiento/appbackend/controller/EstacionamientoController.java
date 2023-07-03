@@ -25,27 +25,28 @@ public class EstacionamientoController {
 	}
 	
 	@GetMapping("")
-	public List<Estacionamiento> obtenerEstacionamientos() {
+	public ResponseEntity<List<Estacionamiento>> obtenerEstacionamientos() {
 		return this.estacionamientoService.estacionamientos();
 	}
 	
-	@GetMapping("/{id}")
-	public Optional<Estacionamiento> obtenerEstacionamiento(@PathVariable Long id) {
-		return this.estacionamientoService.estacionamientoPorId(id);
+	@GetMapping("/{celular}")
+	public ResponseEntity<List<Estacionamiento>> estacionamientosUsuario(@PathVariable String celular) {
+		return this.estacionamientoService.estacionamientosUsuario(celular);
+	}
+	
+	@GetMapping("/{celular}/pendiente")
+	public ResponseEntity<Optional<Estacionamiento>> estacionamientoPendiente(@PathVariable String celular) {
+		return this.estacionamientoService.estacionamientoPendiente(celular);
 	}
 	
 	@PostMapping("/iniciar/{celular}")
 	public ResponseEntity<String> iniciarEstacionamiento(@PathVariable("celular") String celular, @RequestParam("patente") String patente) {
-		
 		return this.estacionamientoService.iniciarEstacionamiento(celular, patente);
-			
 	}
 	
 	@PostMapping("/{id}/finalizar")
 	public ResponseEntity<String> finalizarEstacionamiento(@PathVariable Long id) {
-		
 		return this.estacionamientoService.finalizarEstacionamiento(id);
-			
 	}
 	
 }

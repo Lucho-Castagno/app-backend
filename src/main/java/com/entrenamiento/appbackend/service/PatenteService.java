@@ -22,26 +22,26 @@ public class PatenteService {
 		this.usuarioRepository = usuarioRepository;
 	}
 
-	public List<Patente> patentes() {
-		return this.patenteRepository.findAll();
+	public ResponseEntity<List<Patente>> patentes() {
+		return ResponseEntity.ok(this.patenteRepository.findAll());
 	}
 
-	public ResponseEntity<Patente> crearPatente(String celular, String cadena) {
+	public ResponseEntity<?> crearPatente(String celular, String cadena) {
 		
 		if (!validarCadenaPatente(cadena)) {
-			return ResponseEntity.badRequest().body(null);
+			return ResponseEntity.badRequest().body("Formato de patente: AAA000 ó AA000AA.");
 		}
 		
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty()) {
-			return ResponseEntity.badRequest().body(null);
+			return ResponseEntity.badRequest().body("No se encontro al usuario.");
 		}
 		
 		// este for es para verificar si la patente ya esta asociada al usuario.
 		for (Patente patente : usuario.get().getPatentes()) {
 			if (patente.getCadena().equals(cadena)) {
-				return ResponseEntity.badRequest().body(null);
+				return ResponseEntity.badRequest().body("La patente ya esta asociada a este usuario.");
 			}
 		}
 		

@@ -26,7 +26,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("")
-	public List<Usuario> obtenerUsuarios() {
+	public ResponseEntity<List<Usuario>> obtenerUsuarios() {
 		return usuarioService.usuarios();
 	}
 	
@@ -36,7 +36,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("/{celular}")
-	public Optional<Usuario> obtenerUsuario(@PathVariable String celular) {
+	public ResponseEntity<Optional<Usuario>> obtenerUsuario(@PathVariable String celular) {
 		return usuarioService.usuarioPorId(celular);
 	}
 	

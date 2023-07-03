@@ -24,12 +24,12 @@ public class PatenteController {
 	}
 	
 	@GetMapping("")
-	public List<Patente> obtenerPatentes() {
+	public ResponseEntity<List<Patente>> obtenerPatentes() {
 		return patenteService.patentes();
 	}
 	
 	@PostMapping("/{celular}/crearPatente")
-	public ResponseEntity<Patente> crearPatente(@PathVariable("celular") String celular, @RequestParam("cadena") String cadena) {
+	public ResponseEntity<?> crearPatente(@PathVariable("celular") String celular, @RequestParam("cadena") String cadena) {
 		return this.patenteService.crearPatente(celular, cadena);
 	}
 	

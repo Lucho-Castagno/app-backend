@@ -17,12 +17,12 @@ public class LoginService {
 		this.usuarioRepository = usuarioRepository;
 	}
 	
-	public ResponseEntity<Usuario> login(String celular, String contraseña) {
+	public ResponseEntity<?> login(String celular, String contraseña) {
 		
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty() || !usuario.get().getContraseña().equals(contraseña)) {
-			return ResponseEntity.badRequest().body(null);
+			return ResponseEntity.badRequest().body("El usuario y/o contraseña es incorrecto.");
 		}
 		
 		return ResponseEntity.ok(usuario.get());

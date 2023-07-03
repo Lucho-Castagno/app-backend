@@ -18,7 +18,7 @@ public class LoginController {
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
+	public ResponseEntity<?> login(@RequestBody Usuario usuario) {
 		
 		return this.loginService.login(usuario.getCelular(), usuario.getContraseña());
 		

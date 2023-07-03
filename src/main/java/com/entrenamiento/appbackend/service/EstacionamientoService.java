@@ -32,12 +32,8 @@ public class EstacionamientoService {
 		this.patenteRepository = patenteRepository;
 	}
 	
-	public List<Estacionamiento> estacionamientos() {
-		return this.estacionamientoRepository.findAll();
-	}
-	
-	public Optional<Estacionamiento> estacionamientoPorId(Long id) {
-		return this.estacionamientoRepository.findById(id);
+	public ResponseEntity<List<Estacionamiento>> estacionamientos() {
+		return ResponseEntity.ok(this.estacionamientoRepository.findAll());
 	}
 	
 	public ResponseEntity<String> iniciarEstacionamiento(String celular, String cadena) {
@@ -67,7 +63,7 @@ public class EstacionamientoService {
 		estacionamiento.setPatente(patente.get());
 		
 		estacionamientoRepository.save(estacionamiento);
-		return ResponseEntity.ok().body("Estacionamiento iniciado!");
+		return ResponseEntity.ok("Estacionamiento iniciado!");
 		
 	}
 	
@@ -101,7 +97,7 @@ public class EstacionamientoService {
 		estacionamiento.setImporte(importeTotal);
 		estacionamientoRepository.save(estacionamiento);
 		
-		return ResponseEntity.ok().body("Estacionamiento finalizado!");
+		return ResponseEntity.ok("Estacionamiento finalizado!");
 		
 	}
 	
@@ -142,6 +138,14 @@ public class EstacionamientoService {
 		
 		return horas;
 		
+	}
+
+	public ResponseEntity<List<Estacionamiento>> estacionamientosUsuario(String celular) {
+		return ResponseEntity.ok(this.estacionamientoRepository.findAllByUsuarioCelular(celular));
+	}
+	
+	public ResponseEntity<Optional<Estacionamiento>> estacionamientoPendiente(String celular) {
+		return ResponseEntity.ok(this.estacionamientoRepository.findByUsuarioCelularAndFinIsNull(celular));
 	}
 	
 }
