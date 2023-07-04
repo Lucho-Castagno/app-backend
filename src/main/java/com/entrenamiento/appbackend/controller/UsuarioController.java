@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.service.UsuarioService;
@@ -43,6 +44,11 @@ public class UsuarioController {
 	@PostMapping("")
 	public ResponseEntity<String> crearUsuario(@RequestBody Usuario usuario) {
 		return this.usuarioService.crearUsuario(usuario);
+	}
+	
+	@GetMapping("/{celular}/cuenta")
+	public ResponseEntity<CtaCorriente> obtenerCuentaUsuario(@PathVariable("celular") String celular) {
+		return this.usuarioService.obtenerCuentaUsuario(celular);
 	}
 	
 }

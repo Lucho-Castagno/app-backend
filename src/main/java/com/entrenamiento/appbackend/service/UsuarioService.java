@@ -26,18 +26,23 @@ public class UsuarioService {
 	public ResponseEntity<String> crearUsuario(Usuario usuario) {
 		
 		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(usuario.getCelular()); 
-		if (usuarioExiste.isEmpty()) {
-			CtaCorriente ctaCorriente = new CtaCorriente();
-			this.ctaCorrienteRepository.save(ctaCorriente);
+		if (usuarioExiste.isPresent()) {
+			return ResponseEntity.badRequest().body("El celular que intenta ingresar ya esta registrado en el sistema.");
 			
-			usuario.setCtaCorriente(ctaCorriente);
-			this.usuarioRepository.save(usuario);
-			
-			return ResponseEntity.ok("Usuario registrado con exito!");
 		}
 		
-		return ResponseEntity.badRequest().body("El celular que intenta ingresar ya esta registrado en el sistema.");
- 		
+		if(usuario.getCelular().isEmpty() || usuario.getContraseña().isEmpty() || usuario.getEmail().isEmpty()) {
+			return ResponseEntity.badRequest().body("Todos los campos son requeridos");
+		}
+		
+		CtaCorriente ctaCorriente = new CtaCorriente();
+		this.ctaCorrienteRepository.save(ctaCorriente);
+		
+		usuario.setCtaCorriente(ctaCorriente);
+		this.usuarioRepository.save(usuario);
+		
+		return ResponseEntity.ok("Usuario registrado con exito!");
+		
 	}
 
 	public ResponseEntity<List<Usuario>> usuarios() {
@@ -51,6 +56,11 @@ public class UsuarioService {
 	public ResponseEntity<List<Patente>> obtenerPatentesUsuario(String celular) {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		return ResponseEntity.ok(usuario.get().getPatentes());
+	}
+	
+	public ResponseEntity<CtaCorriente> obtenerCuentaUsuario(String celular) {
+		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
+		return ResponseEntity.ok(usuario.get().getCtaCorriente());
 	}
 	
 }
