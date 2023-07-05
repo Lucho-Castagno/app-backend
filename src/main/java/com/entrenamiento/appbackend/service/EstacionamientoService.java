@@ -63,7 +63,7 @@ public class EstacionamientoService {
 		estacionamiento.setPatente(patente.get());
 		
 		estacionamientoRepository.save(estacionamiento);
-		return ResponseEntity.ok("Estacionamiento iniciado!");
+		return ResponseEntity.ok().body("Estacionamiento iniciado!");
 		
 	}
 	
@@ -97,7 +97,7 @@ public class EstacionamientoService {
 		estacionamiento.setImporte(importeTotal);
 		estacionamientoRepository.save(estacionamiento);
 		
-		return ResponseEntity.ok("Estacionamiento finalizado!");
+		return ResponseEntity.ok().body("Estacionamiento finalizado!");
 		
 	}
 	

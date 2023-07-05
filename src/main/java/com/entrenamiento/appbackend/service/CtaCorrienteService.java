@@ -24,6 +24,10 @@ public class CtaCorrienteService {
 			return ResponseEntity.badRequest().body("No se encontro la cuenta.");
 		}
 		
+		if (monto < 100.0) {
+			return ResponseEntity.badRequest().body("El monto minimo es de $100.0 pesos.");
+		}
+		
 		CtaCorriente ctaCorriente = cuenta.get();
 		ctaCorriente.cargarCredito(monto);
 		this.ctaCorrienteRepository.save(ctaCorriente);

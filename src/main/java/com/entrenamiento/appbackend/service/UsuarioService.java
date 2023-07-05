@@ -41,7 +41,7 @@ public class UsuarioService {
 		usuario.setCtaCorriente(ctaCorriente);
 		this.usuarioRepository.save(usuario);
 		
-		return ResponseEntity.ok("Usuario registrado con exito!");
+		return ResponseEntity.ok().body("Usuario registrado con exito!");
 		
 	}
 

@@ -1,5 +1,6 @@
 package com.entrenamiento.appbackend.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +14,8 @@ public class CtaCorriente {
 	@GeneratedValue(strategy = GenerationType.IDENTITY )
 	private Long id;
 	
-	private double saldo = 10000.0;
+	@Column(columnDefinition = "numeric")
+	private Double saldo = 0.0;
 	
 	@OneToOne(mappedBy = "ctaCorriente")
 	private Usuario usuario;

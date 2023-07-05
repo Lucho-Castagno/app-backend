@@ -47,11 +47,12 @@ public class PatenteService {
 		
 		// verificamos si la patente ya existe, si existe no la creamos de vuelta sino que asociamos la patente con
 		// el usuario, en cambio, si no existe la creamos y asociamos con el usuario.
+		String formatoCadena = cadena.toUpperCase();
 		
-		Optional<Patente> patente = patenteRepository.findByCadena(cadena);
+		Optional<Patente> patente = patenteRepository.findByCadena(formatoCadena);
 		
 		if (patente.isEmpty()) {
-			Patente patenteNueva = new Patente(cadena);
+			Patente patenteNueva = new Patente(formatoCadena);
 			usuario.get().addPatente(patenteNueva);
 			
 			this.usuarioRepository.save(usuario.get());
@@ -69,7 +70,7 @@ public class PatenteService {
 	}
 	
 	public boolean validarCadenaPatente(String cadena) {
-		String patron = "^[A-Z]{3}\\d{3}$|^[A-Z]{2}\\d{3}[A-Z]{2}$";
+		String patron = "^(?i)[A-Za-z]{3}\\d{3}$|^(?i)[A-Za-z]{2}\\d{3}[A-Za-z]{2}$";
 		return cadena.matches(patron);
 	}
 	
