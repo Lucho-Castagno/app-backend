@@ -14,7 +14,7 @@ public class CtaCorriente {
 	@GeneratedValue(strategy = GenerationType.IDENTITY )
 	private Long id;
 	
-	@Column(columnDefinition = "numeric")
+	@Column(columnDefinition = "DECIMAL(19,2)")
 	private Double saldo = 0.0;
 	
 	@OneToOne(mappedBy = "ctaCorriente")

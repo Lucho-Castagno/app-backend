@@ -1,14 +1,17 @@
 package com.entrenamiento.appbackend.service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.Feriado;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Estacionamiento;
 import com.entrenamiento.appbackend.model.Patente;
@@ -23,8 +26,10 @@ public class EstacionamientoService {
 	private final CtaCorrienteRepository ctaCorrienteRepository;
 	private final PatenteRepository patenteRepository;
 	
-	public static final LocalTime HORARIO_APERTURA = LocalTime.of(8, 0);
-	public static final LocalTime HORARIO_CIERRE = LocalTime.of(20, 0);
+	private static final LocalTime HORARIO_APERTURA = LocalTime.of(8, 0);
+	private static final LocalTime HORARIO_CIERRE = LocalTime.of(20, 0);
+	private static final int ESQUEMA_FRACCIONAMIENTO = 15;
+	private static final Double COSTO_FRACCION = 2.50;
 	
 	public EstacionamientoService(EstacionamientoRepository estacionamientoRepository, CtaCorrienteRepository ctaCorrienteRepository, PatenteRepository patenteRepository) {
 		this.estacionamientoRepository = estacionamientoRepository;
@@ -38,22 +43,17 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> iniciarEstacionamiento(String celular, String cadena) {
 		
-		LocalDateTime inicio = LocalDateTime.now();
-		if (inicio.toLocalTime().isBefore(HORARIO_APERTURA)) {
-			return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
-		}
+		if (esFeriado()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados.");
 		
-		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) {
-			return ResponseEntity.badRequest().body("Ya existe un estacionamiento iniciado por este usuario.");
-		}
+		LocalDateTime inicio = LocalDateTime.now();
+		if (inicio.toLocalTime().isBefore(HORARIO_APERTURA)) return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+		
+		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) return ResponseEntity.badRequest().body("Ya existe un estacionamiento iniciado por este usuario.");
 		
 		CtaCorriente ctaCorriente = this.ctaCorrienteRepository.findByUsuarioCelular(celular);
-		if (ctaCorriente == null) {
-			return ResponseEntity.badRequest().body("Cuenta Corriente no encontrada.");
-		}
-		if (ctaCorriente.getSaldo() < 10.0) {
-			return ResponseEntity.badRequest().body("Saldo insuficiente para iniciar un estacionamiento.");
-		}
+		if (ctaCorriente == null) return ResponseEntity.badRequest().body("Cuenta Corriente no encontrada.");
+		
+		if (ctaCorriente.getSaldo() < 10.0) return ResponseEntity.badRequest().body("Saldo insuficiente para iniciar un estacionamiento.");
 		
 		Estacionamiento estacionamiento = new Estacionamiento();
 		estacionamiento.setUsuario(ctaCorriente.getUsuario());
@@ -69,25 +69,21 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> finalizarEstacionamiento(Long id) {
 		
+		if (esFeriado()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados.");
+		
 		LocalDateTime fin = LocalDateTime.now();
-		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) {
-			return ResponseEntity.badRequest().body("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
-		}
+		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) return ResponseEntity.badRequest().body("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
 		
 		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
 		
-		if (estacionamientoOpcional.isEmpty()) {
-			return ResponseEntity.badRequest().body("No se encontro el estacionamiento indicado.");
-		}
+		if (estacionamientoOpcional.isEmpty()) return ResponseEntity.badRequest().body("No se encontro el estacionamiento indicado.");
 		
 		Estacionamiento estacionamiento = estacionamientoOpcional.get();
 		
-		if (estacionamiento.getFin() != null) {
-			return ResponseEntity.badRequest().body("El estacionamiento indicado ya finalizó.");
-		}
+		if (estacionamiento.getFin() != null) return ResponseEntity.badRequest().body("El estacionamiento indicado ya finalizó.");
 		
-		long horasTotales = calculoHorasEstacionamiento(estacionamiento.getInicio(), LocalDateTime.now());
-		double importeTotal = 10.0 * horasTotales;
+		long fracciones = calculoHorasEstacionamiento(estacionamiento.getInicio(), LocalDateTime.now());
+		double importeTotal = COSTO_FRACCION * fracciones;
 		
 		CtaCorriente ctaCorriente = this.ctaCorrienteRepository.findByUsuarioCelular(estacionamiento.getUsuario().getCelular());
 		ctaCorriente.consumo(importeTotal);
@@ -101,19 +97,22 @@ public class EstacionamientoService {
 		
 	}
 	
-	public long calculoHorasEstacionamiento(LocalDateTime inicio, LocalDateTime fin) {
+	private long calculoHorasEstacionamiento(LocalDateTime inicio, LocalDateTime fin) {
+		// para un sistema que cuenta horas completas se trabajaria dividiendo la cantidad de minutos entre duraciones por 60
+		// en cambio, si se aplican cobros con un esquema de fraccionamiento se deberia dividir por la cantidad de minutos que
+		// se usa para el fraccionamiento, en el caso de una fraccion de 15 minutos a $2.50 seria duracion.toMinutes()/15
+		// luego se podria tomar el valor de duracion.toMinutes() % 15 para que me de los minutos que sobraron y tomarlos con el valor de 15 minutos
 		
-		long horas = 0;
+		long fracciones = 0;
 		
 		Duration duracion = Duration.between(inicio, fin);
-		long minutos = duracion.toMinutesPart();
 		// para el caso en el que el estacionamiento inicie y termine en el mismo dia
 		if (inicio.toLocalDate().equals(fin.toLocalDate())) {
 			
-			horas = (long) Math.ceil(duracion.toMinutes() / 60);
+			fracciones = (long) Math.ceil(duracion.toMinutes() / ESQUEMA_FRACCIONAMIENTO);
 			
 		} else {
-			
+			// caso en el que inicie en un dia y termine en el siguiente
 			long dias = duracion.toDays();
 			
 			Duration duracionPrimerDia = Duration.between(inicio.toLocalTime(), HORARIO_CIERRE);
@@ -121,22 +120,22 @@ public class EstacionamientoService {
 			
 			if ( dias <= 1) {
 				
-				horas = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / 60);
+				fracciones = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / ESQUEMA_FRACCIONAMIENTO);
 			
 			} else {
-				
+				// caso en el que tome mas de un dia (diferentes dias) ej. empieza un lunes y termina un jueves
 				long diasCompletos = (fin.getDayOfMonth() - inicio.getDayOfMonth()) + 1;
 				long diasIntermedios = diasCompletos - 2;
-				long horasCompletas = diasIntermedios * (HORARIO_CIERRE.getHour() - HORARIO_APERTURA.getHour());
+				long horasCompletasEnMinutos = diasIntermedios * (HORARIO_CIERRE.getHour() - HORARIO_APERTURA.getHour()) * 60 / ESQUEMA_FRACCIONAMIENTO;
 				
-				horas = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / 60) + horasCompletas;
+				fracciones = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / ESQUEMA_FRACCIONAMIENTO) + horasCompletasEnMinutos;
 			}
 
 		}
 		
-		if (minutos > 0) horas ++;
-		
-		return horas;
+		if ((fracciones % ESQUEMA_FRACCIONAMIENTO) > 0) fracciones ++;
+		System.out.println("FRACCIONES A MULTIPLICAR!!!!!!!!!: " + fracciones);
+		return fracciones;
 		
 	}
 
@@ -146,6 +145,12 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<Optional<Estacionamiento>> estacionamientoPendiente(String celular) {
 		return ResponseEntity.ok(this.estacionamientoRepository.findByUsuarioCelularAndFinIsNull(celular));
+	}
+	
+	private boolean esFeriado() {
+		LocalDate fechaActual = LocalDate.now();
+		int añoActual = fechaActual.getYear();
+		return Arrays.stream(Feriado.values()).anyMatch(feriado -> feriado.getFecha(añoActual).equals(fechaActual));
 	}
 	
 }

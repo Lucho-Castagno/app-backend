@@ -69,7 +69,7 @@ public class PatenteService {
 		
 	}
 	
-	public boolean validarCadenaPatente(String cadena) {
+	private boolean validarCadenaPatente(String cadena) {
 		String patron = "^(?i)[A-Za-z]{3}\\d{3}$|^(?i)[A-Za-z]{2}\\d{3}[A-Za-z]{2}$";
 		return cadena.matches(patron);
 	}
