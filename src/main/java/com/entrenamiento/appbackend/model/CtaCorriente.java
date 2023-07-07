@@ -1,10 +1,16 @@
 package com.entrenamiento.appbackend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -19,6 +25,10 @@ public class CtaCorriente {
 	
 	@OneToOne(mappedBy = "ctaCorriente")
 	private Usuario usuario;
+	
+	@OneToMany(mappedBy = "cuentaCorriente")
+	@JsonIgnore
+	private List<MovimientoCta> movimientosCta = new ArrayList<>();
 
 	public CtaCorriente() {
 		super();
@@ -55,6 +65,14 @@ public class CtaCorriente {
 	
 	public void cargarCredito(double credito) {
 		this.saldo = this.saldo + credito;
+	}
+	
+	public void addMovimiento(MovimientoCta movimiento) {
+		movimientosCta.add(movimiento);
+	}
+
+	public List<MovimientoCta> getMovimientosCta() {
+		return movimientosCta;
 	}
 	
 }

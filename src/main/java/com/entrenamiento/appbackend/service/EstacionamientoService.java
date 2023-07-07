@@ -1,5 +1,6 @@
 package com.entrenamiento.appbackend.service;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +16,6 @@ import com.entrenamiento.appbackend.Feriado;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Estacionamiento;
 import com.entrenamiento.appbackend.model.Patente;
-import com.entrenamiento.appbackend.repository.CtaCorrienteRepository;
 import com.entrenamiento.appbackend.repository.EstacionamientoRepository;
 import com.entrenamiento.appbackend.repository.PatenteRepository;
 
@@ -23,17 +23,17 @@ import com.entrenamiento.appbackend.repository.PatenteRepository;
 public class EstacionamientoService {
 	
 	private final EstacionamientoRepository estacionamientoRepository;
-	private final CtaCorrienteRepository ctaCorrienteRepository;
+	private final CtaCorrienteService ctaCorrienteService;
 	private final PatenteRepository patenteRepository;
 	
 	private static final LocalTime HORARIO_APERTURA = LocalTime.of(8, 0);
 	private static final LocalTime HORARIO_CIERRE = LocalTime.of(20, 0);
-	private static final int ESQUEMA_FRACCIONAMIENTO = 15;
+	private static final Double ESQUEMA_FRACCIONAMIENTO = 15.0;
 	private static final Double COSTO_FRACCION = 2.50;
 	
-	public EstacionamientoService(EstacionamientoRepository estacionamientoRepository, CtaCorrienteRepository ctaCorrienteRepository, PatenteRepository patenteRepository) {
+	public EstacionamientoService(EstacionamientoRepository estacionamientoRepository, CtaCorrienteService ctaCorrienteService, PatenteRepository patenteRepository) {
 		this.estacionamientoRepository = estacionamientoRepository;
-		this.ctaCorrienteRepository = ctaCorrienteRepository;
+		this.ctaCorrienteService = ctaCorrienteService;
 		this.patenteRepository = patenteRepository;
 	}
 	
@@ -43,14 +43,13 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> iniciarEstacionamiento(String celular, String cadena) {
 		
-		if (esFeriado()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados.");
+		if (esFeriado() || esFinSemana()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados, sabados y domingos.");
 		
-		LocalDateTime inicio = LocalDateTime.now();
-		if (inicio.toLocalTime().isBefore(HORARIO_APERTURA)) return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+		if (LocalDateTime.now().toLocalTime().isBefore(HORARIO_APERTURA)) return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
 		
 		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) return ResponseEntity.badRequest().body("Ya existe un estacionamiento iniciado por este usuario.");
 		
-		CtaCorriente ctaCorriente = this.ctaCorrienteRepository.findByUsuarioCelular(celular);
+		CtaCorriente ctaCorriente = this.ctaCorrienteService.buscarCuentaUsuario(celular);
 		if (ctaCorriente == null) return ResponseEntity.badRequest().body("Cuenta Corriente no encontrada.");
 		
 		if (ctaCorriente.getSaldo() < 10.0) return ResponseEntity.badRequest().body("Saldo insuficiente para iniciar un estacionamiento.");
@@ -69,25 +68,21 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> finalizarEstacionamiento(Long id) {
 		
-		if (esFeriado()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados.");
+		if (esFeriado() || esFinSemana()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados, sabados y domingos.");
 		
 		LocalDateTime fin = LocalDateTime.now();
 		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) return ResponseEntity.badRequest().body("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
 		
 		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
-		
 		if (estacionamientoOpcional.isEmpty()) return ResponseEntity.badRequest().body("No se encontro el estacionamiento indicado.");
 		
 		Estacionamiento estacionamiento = estacionamientoOpcional.get();
-		
 		if (estacionamiento.getFin() != null) return ResponseEntity.badRequest().body("El estacionamiento indicado ya finalizó.");
 		
 		long fracciones = calculoHorasEstacionamiento(estacionamiento.getInicio(), LocalDateTime.now());
 		double importeTotal = COSTO_FRACCION * fracciones;
 		
-		CtaCorriente ctaCorriente = this.ctaCorrienteRepository.findByUsuarioCelular(estacionamiento.getUsuario().getCelular());
-		ctaCorriente.consumo(importeTotal);
-		ctaCorrienteRepository.save(ctaCorriente);
+		this.ctaCorrienteService.realizarConsumo(estacionamiento.getUsuario().getCelular(), importeTotal);
 		
 		estacionamiento.setFin(LocalDateTime.now());
 		estacionamiento.setImporte(importeTotal);
@@ -103,13 +98,12 @@ public class EstacionamientoService {
 		// se usa para el fraccionamiento, en el caso de una fraccion de 15 minutos a $2.50 seria duracion.toMinutes()/15
 		// luego se podria tomar el valor de duracion.toMinutes() % 15 para que me de los minutos que sobraron y tomarlos con el valor de 15 minutos
 		
-		long fracciones = 0;
+		double fracciones = 0;
 		
 		Duration duracion = Duration.between(inicio, fin);
 		// para el caso en el que el estacionamiento inicie y termine en el mismo dia
 		if (inicio.toLocalDate().equals(fin.toLocalDate())) {
-			
-			fracciones = (long) Math.ceil(duracion.toMinutes() / ESQUEMA_FRACCIONAMIENTO);
+			fracciones = duracion.toMinutes() / ESQUEMA_FRACCIONAMIENTO;
 			
 		} else {
 			// caso en el que inicie en un dia y termine en el siguiente
@@ -120,22 +114,21 @@ public class EstacionamientoService {
 			
 			if ( dias <= 1) {
 				
-				fracciones = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / ESQUEMA_FRACCIONAMIENTO);
+				fracciones = (duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes() / ESQUEMA_FRACCIONAMIENTO);
 			
 			} else {
 				// caso en el que tome mas de un dia (diferentes dias) ej. empieza un lunes y termina un jueves
 				long diasCompletos = (fin.getDayOfMonth() - inicio.getDayOfMonth()) + 1;
 				long diasIntermedios = diasCompletos - 2;
-				long horasCompletasEnMinutos = diasIntermedios * (HORARIO_CIERRE.getHour() - HORARIO_APERTURA.getHour()) * 60 / ESQUEMA_FRACCIONAMIENTO;
+				double horasCompletasEnMinutos = ((diasIntermedios * (HORARIO_CIERRE.getHour() - HORARIO_APERTURA.getHour())) * 60) / ESQUEMA_FRACCIONAMIENTO;
 				
-				fracciones = (long) Math.ceil((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / ESQUEMA_FRACCIONAMIENTO) + horasCompletasEnMinutos;
+				fracciones = ((duracionPrimerDia.toMinutes() + duracionUltimoDia.toMinutes()) / ESQUEMA_FRACCIONAMIENTO) + horasCompletasEnMinutos;
 			}
 
 		}
 		
 		if ((fracciones % ESQUEMA_FRACCIONAMIENTO) > 0) fracciones ++;
-		System.out.println("FRACCIONES A MULTIPLICAR!!!!!!!!!: " + fracciones);
-		return fracciones;
+		return (long) fracciones;
 		
 	}
 
@@ -151,6 +144,12 @@ public class EstacionamientoService {
 		LocalDate fechaActual = LocalDate.now();
 		int añoActual = fechaActual.getYear();
 		return Arrays.stream(Feriado.values()).anyMatch(feriado -> feriado.getFecha(añoActual).equals(fechaActual));
+	}
+	
+	private boolean esFinSemana() {
+		LocalDateTime fechaActual = LocalDateTime.now();
+		if (fechaActual.getDayOfWeek().equals(DayOfWeek.SATURDAY) || fechaActual.getDayOfWeek().equals(DayOfWeek.SUNDAY)) return true;
+		return false;
 	}
 	
 }
