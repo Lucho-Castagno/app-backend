@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
@@ -27,20 +28,19 @@ public class UsuarioService {
 		
 		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(usuario.getCelular()); 
 		if (usuarioExiste.isPresent()) {
-			return ResponseEntity.badRequest().body("El celular que intenta ingresar ya esta registrado en el sistema.");
-			
+			throw new AppRequestException("El celular que intenta ingresar ya esta registrado en el sistema.");
 		}
 		
 		if (!validarCelular(usuario.getCelular())) {
-			return ResponseEntity.badRequest().body("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
+			throw new AppRequestException("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
 		}
 		
 		if (!validarMail(usuario.getEmail())) {
-			return ResponseEntity.badRequest().body("El formato del email es invalido.");
+			throw new AppRequestException("El formato del email es invalido.");
 		}
 		
 		if (usuario.getCelular().isEmpty() || usuario.getContraseña().isEmpty() || usuario.getEmail().isEmpty()) {
-			return ResponseEntity.badRequest().body("Todos los campos son requeridos");
+			throw new AppRequestException("Todos los campos son requeridos");
 		}
 		
 		CtaCorriente ctaCorriente = new CtaCorriente();

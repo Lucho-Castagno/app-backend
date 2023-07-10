@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.repository.UsuarioRepository;
 
@@ -22,7 +23,7 @@ public class LoginService {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty() || !usuario.get().getContraseña().equals(contraseña)) {
-			return ResponseEntity.badRequest().body("El usuario y/o contraseña es incorrecto.");
+			throw new AppRequestException("El usuario y/o contraseña es incorrecto.");
 		}
 		
 		return ResponseEntity.ok(usuario.get());

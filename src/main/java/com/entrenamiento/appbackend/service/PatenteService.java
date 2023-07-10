@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
 import com.entrenamiento.appbackend.repository.PatenteRepository;
@@ -29,19 +30,19 @@ public class PatenteService {
 	public ResponseEntity<?> crearPatente(String celular, String cadena) {
 		
 		if (!validarCadenaPatente(cadena)) {
-			return ResponseEntity.badRequest().body("Formato de patente: AAA000 ó AA000AA.");
+			throw new AppRequestException("Formato de patente: AAA000 ó AA000AA.");
 		}
 		
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		
 		if (usuario.isEmpty()) {
-			return ResponseEntity.badRequest().body("No se encontro al usuario.");
+			throw new AppRequestException("No se encontro al usuario.");
 		}
 		
 		// este for es para verificar si la patente ya esta asociada al usuario.
 		for (Patente patente : usuario.get().getPatentes()) {
 			if (patente.getCadena().equals(cadena)) {
-				return ResponseEntity.badRequest().body("La patente ya esta asociada a este usuario.");
+				throw new AppRequestException("La patente ya esta asociada a este usuario.");
 			}
 		}
 		

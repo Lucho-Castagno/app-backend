@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.TipoMovimiento;
+import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.MovimientoCta;
 import com.entrenamiento.appbackend.repository.CtaCorrienteRepository;
@@ -28,11 +29,11 @@ public class CtaCorrienteService {
 		
 		Optional<CtaCorriente> cuenta = this.ctaCorrienteRepository.findById(id);
 		if(cuenta.isEmpty()) {
-			return ResponseEntity.badRequest().body("No se encontro la cuenta.");
+			throw new AppRequestException("No se encontro la cuenta.");
 		}
 		
 		if (monto < 100.0) {
-			return ResponseEntity.badRequest().body("El monto minimo es de $100.0 pesos.");
+			throw new AppRequestException("El monto minimo es de $100.0 pesos.");
 		}
 		
 		MovimientoCta movimiento = new MovimientoCta();
@@ -74,9 +75,6 @@ public class CtaCorrienteService {
 
 	public ResponseEntity<List<MovimientoCta>> obtenerMovimientosCuenta(Long id) {
 		Optional<CtaCorriente> cuenta = this.ctaCorrienteRepository.findById(id);
-		if(cuenta.isEmpty()) {
-			return ResponseEntity.badRequest().body(null);
-		}
 		
 		return ResponseEntity.ok(cuenta.get().getMovimientosCta());
 		

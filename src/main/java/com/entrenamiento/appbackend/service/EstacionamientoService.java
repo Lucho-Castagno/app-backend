@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.Feriado;
+import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Estacionamiento;
 import com.entrenamiento.appbackend.model.Patente;
@@ -43,16 +44,30 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> iniciarEstacionamiento(String celular, String cadena) {
 		
-		if (esFeriado() || esFinSemana()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados, sabados y domingos.");
+		if (esFeriado() || esFinSemana()) {
+			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos.");
+		}
 		
-		if (LocalDateTime.now().toLocalTime().isBefore(HORARIO_APERTURA)) return ResponseEntity.badRequest().body("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+		if (LocalDateTime.now().toLocalTime().isBefore(HORARIO_APERTURA)) {
+			throw new AppRequestException("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+		}
 		
-		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) return ResponseEntity.badRequest().body("Ya existe un estacionamiento iniciado por este usuario.");
+		if (this.estacionamientoRepository.existsByUsuarioCelularAndFinIsNull(celular)) {
+			throw new AppRequestException("Ya existe un estacionamiento iniciado por este usuario.");
+		}
+		
+		if (this.estacionamientoRepository.existsByPatenteCadenaAndFinIsNull(cadena)) {
+			throw new AppRequestException("Ya existe un estacionamiento iniciado para esta patente.");
+		}
 		
 		CtaCorriente ctaCorriente = this.ctaCorrienteService.buscarCuentaUsuario(celular);
-		if (ctaCorriente == null) return ResponseEntity.badRequest().body("Cuenta Corriente no encontrada.");
+		if (ctaCorriente == null) {
+			throw new AppRequestException("Cuenta Corriente no encontrada.");
+		}
 		
-		if (ctaCorriente.getSaldo() < 10.0) return ResponseEntity.badRequest().body("Saldo insuficiente para iniciar un estacionamiento.");
+		if (ctaCorriente.getSaldo() < COSTO_FRACCION) {
+			throw new AppRequestException("Saldo insuficiente para iniciar un estacionamiento.");
+		}
 		
 		Estacionamiento estacionamiento = new Estacionamiento();
 		estacionamiento.setUsuario(ctaCorriente.getUsuario());
@@ -68,16 +83,24 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> finalizarEstacionamiento(Long id) {
 		
-		if (esFeriado() || esFinSemana()) return ResponseEntity.badRequest().body("El sistema no funciona en feriados, sabados y domingos.");
+		if (esFeriado() || esFinSemana()) { 
+			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos."); 
+		}
 		
 		LocalDateTime fin = LocalDateTime.now();
-		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) return ResponseEntity.badRequest().body("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
+		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) {
+			throw new AppRequestException("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
+		}
 		
 		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
-		if (estacionamientoOpcional.isEmpty()) return ResponseEntity.badRequest().body("No se encontro el estacionamiento indicado.");
+		if (estacionamientoOpcional.isEmpty()) { 
+			throw new AppRequestException("No se encontro el estacionamiento indicado.");
+		}
 		
 		Estacionamiento estacionamiento = estacionamientoOpcional.get();
-		if (estacionamiento.getFin() != null) return ResponseEntity.badRequest().body("El estacionamiento indicado ya finalizó.");
+		if (estacionamiento.getFin() != null) { 
+			throw new AppRequestException("El estacionamiento indicado ya finalizó.");
+		}
 		
 		long fracciones = calculoHorasEstacionamiento(estacionamiento.getInicio(), LocalDateTime.now());
 		double importeTotal = COSTO_FRACCION * fracciones;

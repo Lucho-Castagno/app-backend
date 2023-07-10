@@ -15,4 +15,6 @@ public interface EstacionamientoRepository extends JpaRepository<Estacionamiento
 	
 	List<Estacionamiento> findAllByUsuarioCelular(String celular);
 
+	boolean existsByPatenteCadenaAndFinIsNull(String cadena);
+
 }
