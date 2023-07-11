@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.entrenamiento.appbackend.model.Estacionamiento;
+import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.service.EstacionamientoService;
 
 @RestController

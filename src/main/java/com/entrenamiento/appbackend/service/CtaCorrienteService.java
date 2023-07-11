@@ -64,9 +64,10 @@ public class CtaCorrienteService {
 		movimiento.setMonto(importe);
 		
 		ctaCorriente.addMovimiento(movimiento);
-		this.movimientoCtaRepository.save(movimiento);
+		this.ctaCorrienteRepository.save(ctaCorriente);
 		
-		ctaCorrienteRepository.save(ctaCorriente);
+		movimiento.setCuentaCorriente(ctaCorriente);
+		this.movimientoCtaRepository.save(movimiento);
 	}
 	
 	public CtaCorriente buscarCuentaUsuario(String celular) {
