@@ -3,6 +3,7 @@ package com.entrenamiento.appbackend.model;
 import java.time.LocalDateTime;
 
 import com.entrenamiento.appbackend.TipoMovimiento;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +32,7 @@ public class MovimientoCta {
 	
 	@ManyToOne
 	@JoinColumn(name = "cta_id")
+	@JsonIgnore
 	private CtaCorriente cuentaCorriente;
 
 	public MovimientoCta() {

@@ -24,6 +24,7 @@ public class CtaCorriente {
 	private Double saldo = 0.0;
 	
 	@OneToOne(mappedBy = "ctaCorriente")
+	@JsonIgnore
 	private Usuario usuario;
 	
 	@OneToMany(mappedBy = "cuentaCorriente")
