@@ -6,8 +6,6 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,11 +37,6 @@ public class UsuarioController {
 	@GetMapping("/{celular}")
 	public ResponseEntity<Optional<Usuario>> obtenerUsuario(@PathVariable String celular) {
 		return usuarioService.usuarioPorId(celular);
-	}
-	
-	@PostMapping("")
-	public ResponseEntity<String> crearUsuario(@RequestBody Usuario usuario) {
-		return this.usuarioService.crearUsuario(usuario);
 	}
 	
 	@GetMapping("/{celular}/cuenta")

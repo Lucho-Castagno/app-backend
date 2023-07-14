@@ -6,51 +6,18 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CtaCorriente;
 import com.entrenamiento.appbackend.model.Patente;
 import com.entrenamiento.appbackend.model.Usuario;
-import com.entrenamiento.appbackend.repository.CtaCorrienteRepository;
 import com.entrenamiento.appbackend.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
 	
 	private final UsuarioRepository usuarioRepository;
-	private final CtaCorrienteRepository ctaCorrienteRepository;
 	
-	public UsuarioService(UsuarioRepository usuarioRepository, CtaCorrienteRepository ctaCorrienteRepository) {
+	public UsuarioService(UsuarioRepository usuarioRepository) {
 		this.usuarioRepository = usuarioRepository;
-		this.ctaCorrienteRepository = ctaCorrienteRepository;
-	}
-	
-	public ResponseEntity<String> crearUsuario(Usuario usuario) {
-		
-		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(usuario.getCelular()); 
-		if (usuarioExiste.isPresent()) {
-			throw new AppRequestException("El celular que intenta ingresar ya esta registrado en el sistema.");
-		}
-		
-		if (!validarCelular(usuario.getCelular())) {
-			throw new AppRequestException("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
-		}
-		
-		if (!validarMail(usuario.getEmail())) {
-			throw new AppRequestException("El formato del email es invalido.");
-		}
-		
-		if (usuario.getCelular().isEmpty() || usuario.getContraseña().isEmpty() || usuario.getEmail().isEmpty()) {
-			throw new AppRequestException("Todos los campos son requeridos");
-		}
-		
-		CtaCorriente ctaCorriente = new CtaCorriente();
-		this.ctaCorrienteRepository.save(ctaCorriente);
-		
-		usuario.setCtaCorriente(ctaCorriente);
-		this.usuarioRepository.save(usuario);
-		
-		return ResponseEntity.ok().body("Usuario registrado con exito!");
-		
 	}
 
 	public ResponseEntity<List<Usuario>> usuarios() {
@@ -69,16 +36,6 @@ public class UsuarioService {
 	public ResponseEntity<CtaCorriente> obtenerCuentaUsuario(String celular) {
 		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
 		return ResponseEntity.ok(usuario.get().getCtaCorriente());
-	}
-	
-	private boolean validarCelular(String celular) {
-		String patron = "^(?!0|15)[0-9]{2}[0-9]{8}$";
-		return celular.matches(patron);
-	}
-	
-	private boolean validarMail(String mail) {
-		String patron = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-		return mail.matches(patron);
 	}
 	
 }

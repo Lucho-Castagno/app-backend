@@ -70,9 +70,9 @@ public class Usuario implements UserDetails{
 		this.celular = celular;
 	}
 
-	public String getContraseña() {
-		return contraseña;
-	}
+	//public String getContraseña() {
+	//	return contraseña;
+	//}
 
 	public void setContraseña(String contraseña) {
 		this.contraseña = contraseña;
