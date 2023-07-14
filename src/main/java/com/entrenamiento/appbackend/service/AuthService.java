@@ -94,7 +94,7 @@ public class AuthService {
 		Usuario usuario = usuarioRepository.findByCelular(request.getCelular()).orElseThrow(() -> new AppRequestException("El usuario no esta registrado en el sistema."));
 		
 		var jwtToken = jwtService.generateToken(usuario);
-		return ResponseEntity.ok(new AuthResponse(jwtToken));
+		return ResponseEntity.ok(new AuthResponse(jwtToken, usuario.getCelular()));
 	}
 	
 	private boolean validarCelular(String celular) {
