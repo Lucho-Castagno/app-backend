@@ -38,18 +38,6 @@ public class AuthService {
 		this.authenticationManager = authenticationManager;
 	}
 	
-	public ResponseEntity<?> login(String celular, String contraseña) {
-		
-		Optional<Usuario> usuario = usuarioRepository.findByCelular(celular);
-		
-		if (usuario.isEmpty() || !usuario.get().getPassword().equals(contraseña)) {
-			throw new AppRequestException("El usuario y/o contraseña es incorrecto.");
-		}
-		
-		return ResponseEntity.ok(usuario.get());
-		
-	}
-	
 	public ResponseEntity<String> registrarse(RegisterRequest request) {
 		
 		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(request.getCelular()); 
