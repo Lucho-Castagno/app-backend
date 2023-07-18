@@ -73,6 +73,11 @@ public class AuthService {
 	}
 	
 	public ResponseEntity<?> iniciarSesion(AuthRequest request) {
+		
+		if (request.getCelular().isEmpty() || request.getContraseña().isEmpty()) {
+			throw new AppRequestException("Todos los campos son requeridos.");
+		}
+		
 		this.authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
 						request.getCelular(),

@@ -83,6 +83,11 @@ public class EstacionamientoService {
 	
 	public ResponseEntity<String> finalizarEstacionamiento(Long id) {
 		
+		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
+		if (estacionamientoOpcional.isEmpty()) { 
+			throw new AppRequestException("No se encontro el estacionamiento indicado.");
+		}
+		
 		if (esFeriado() || esFinSemana()) { 
 			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos."); 
 		}
@@ -90,11 +95,6 @@ public class EstacionamientoService {
 		LocalDateTime fin = LocalDateTime.now();
 		if (fin.toLocalTime().isAfter(HORARIO_CIERRE)) {
 			throw new AppRequestException("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
-		}
-		
-		Optional<Estacionamiento> estacionamientoOpcional = this.estacionamientoRepository.findById(id);
-		if (estacionamientoOpcional.isEmpty()) { 
-			throw new AppRequestException("No se encontro el estacionamiento indicado.");
 		}
 		
 		Estacionamiento estacionamiento = estacionamientoOpcional.get();
