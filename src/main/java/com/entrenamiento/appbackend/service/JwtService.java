@@ -20,9 +20,9 @@ import io.jsonwebtoken.security.Keys;
 public class JwtService {
 	
 	@Value("${jwt.secret.key}")
-	private String CLAVE_SECRETA;
+	private String SECRET_KEY;
 	@Value("${jwt.time.expiration}")
-	private String TIEMPO_EXPIRACION_CLAVE;
+	private String KEY_EXPIRATION_TIME;
 	
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
@@ -42,7 +42,7 @@ public class JwtService {
 				.setClaims(extraClaims)
 				.setSubject(userDetails.getUsername())
 				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(TIEMPO_EXPIRACION_CLAVE)))
+				.setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(KEY_EXPIRATION_TIME)))
 				.signWith(getSignInKey(), SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -69,7 +69,7 @@ public class JwtService {
 	}
 	
 	private Key getSignInKey() {
-		byte[] keyBytes = Decoders.BASE64.decode(CLAVE_SECRETA);
+		byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
 	

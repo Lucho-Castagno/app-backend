@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -18,13 +20,18 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
+// NOTA: el nombre de esta tabla es 'Usser' porque PostgreSQL no permite crear una tabla con nombre 'User',
+// por lo tanto tome la decision de cambiar el nombre a 'Usser'.
 @Entity
-public class Usuario implements UserDetails{
+public class Usser implements UserDetails{
 	
 	@Id
-	private String celular;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 	
-	private String contraseña;
+	private String cellphone;
+	
+	private String password;
 	
 	private String email;
 	
@@ -32,66 +39,75 @@ public class Usuario implements UserDetails{
 	// como por ejemplo, un auto compartido por una pareja o una camioneta de entregas utilizada por varios trabajadores.
 	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinTable( 
-			name = "usuario_patente",
-			joinColumns = @JoinColumn(name = "celular"),
-			inverseJoinColumns = @JoinColumn(name = "idPatente")
+			name = "user_plate",
+			joinColumns = @JoinColumn(name = "userId"),
+			inverseJoinColumns = @JoinColumn(name = "plateId")
 	)
 	@JsonIgnore
-	private List<Patente> patentes = new ArrayList<>();	
+	private List<Plate> plates = new ArrayList<>();	
 	
 	@OneToOne
-	@JoinColumn(name = "ctaCorriente")
+	@JoinColumn(name = "accountId")
 	@JsonIgnore
-	private CtaCorriente ctaCorriente;
+	private CheckingAccount account;
 	
-	@OneToMany(mappedBy = "usuario")
+	@OneToMany(mappedBy = "user")
 	@JsonIgnore
-	private List<Estacionamiento> estacionamientos;
+	private List<Parking> parkings;
 	
-	public Usuario() {
+	public Usser() {
 		super();
 	}
 
-	public Usuario(String celular, String contraseña, String email) {
+	public Usser(String cellphone, String password, String email) {
 		super();
-		this.celular = celular;
-		this.contraseña = contraseña;
+		this.cellphone = cellphone;
+		this.password = password;
 		this.email = email;
 	}
 
-	public void addPatente(Patente patente) {
-		this.patentes.add(patente);
-	}
-	public String getCelular() {
-		return celular;
+	public Long getId() {
+		return id;
 	}
 
-	public void setCelular(String celular) {
-		this.celular = celular;
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void addPlate(Plate plate) {
+		this.plates.add(plate);
+	}
+	
+	public String getCellphone() {
+		return cellphone;
+	}
+
+	public void setCellphone(String cellphone) {
+		this.cellphone = cellphone;
 	}
 
 	//public String getContraseña() {
 	//	return contraseña;
 	//}
 
-	public void setContraseña(String contraseña) {
-		this.contraseña = contraseña;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	public List<Patente> getPatentes() {
-		return patentes;
+	public List<Plate> getPlates() {
+		return plates;
 	}
 
-	public void setPatentes(List<Patente> patentes) {
-		this.patentes = patentes;
+	public void setPlates(List<Plate> plates) {
+		this.plates = plates;
 	}
 
-	public void setCtaCorriente(CtaCorriente ctaCorriente) {
-		this.ctaCorriente = ctaCorriente;
+	public void setAccount(CheckingAccount checkingAccount) {
+		this.account = checkingAccount;
 	}
 	
-	public CtaCorriente getCtaCorriente() {
-		return this.ctaCorriente;
+	public CheckingAccount getAccount() {
+		return this.account;
 	}
 
 	public String getEmail() {
@@ -109,12 +125,12 @@ public class Usuario implements UserDetails{
 
 	@Override
 	public String getPassword() {
-		return contraseña;
+		return password;
 	}
 
 	@Override
 	public String getUsername() {
-		return celular;
+		return cellphone;
 	}
 
 	@Override

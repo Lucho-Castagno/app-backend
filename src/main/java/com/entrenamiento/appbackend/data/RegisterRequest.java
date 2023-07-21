@@ -2,31 +2,31 @@ package com.entrenamiento.appbackend.data;
 
 public class RegisterRequest {
 	
-	private String celular;
-	private String contraseña;
+	private String cellphone;
+	private String password;
 	private String email;
 	
 	public RegisterRequest() {
 		super();
 	}
 	
-	public RegisterRequest(String celular, String contraseña, String email) {
+	public RegisterRequest(String cellphone, String password, String email) {
 		super();
-		this.celular = celular;
-		this.contraseña = contraseña;
+		this.cellphone = cellphone;
+		this.password = password;
 		this.email = email;
 	}
-	public String getCelular() {
-		return celular;
+	public String getCellphone() {
+		return cellphone;
 	}
-	public void setCelular(String celular) {
-		this.celular = celular;
+	public void setCellphone(String cellphone) {
+		this.cellphone = cellphone;
 	}
-	public String getContraseña() {
-		return contraseña;
+	public String getPassword() {
+		return password;
 	}
-	public void setContraseña(String contraseña) {
-		this.contraseña = contraseña;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	public String getEmail() {
 		return email;

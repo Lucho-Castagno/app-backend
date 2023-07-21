@@ -3,7 +3,7 @@ package com.entrenamiento.appbackend;
 import java.time.LocalDate;
 import java.time.Month;
 
-public enum Feriado {
+public enum Holiday {
 	AÑO_NUEVO(Month.JANUARY, 1),
 	DIA_CARNAVAL_1(Month.FEBRUARY, 20),
 	DIA_CARNAVAL_2(Month.FEBRUARY, 21),
@@ -22,15 +22,15 @@ public enum Feriado {
 	INMACULADA_CONCEPCION(Month.DECEMBER, 8),
 	NAVIDAD(Month.DECEMBER, 25);
 	
-	private final Month mes;
-	private final int dia;
+	private final Month month;
+	private final int day;
 	
-	Feriado(Month mes, int dia) {
-		this.mes = mes;
-		this.dia = dia;
+	Holiday(Month month, int day) {
+		this.month = month;
+		this.day = day;
 	}
 	
-	public LocalDate getFecha(int año) {
-		return LocalDate.of(año, mes, dia);
+	public LocalDate getDate(int year) {
+		return LocalDate.of(year, month, day);
 	}
 }

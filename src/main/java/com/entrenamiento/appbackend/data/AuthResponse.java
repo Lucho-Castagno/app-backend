@@ -3,16 +3,16 @@ package com.entrenamiento.appbackend.data;
 public class AuthResponse {
 	
 	private String token;
-	private String celular;
+	private Long userId;
 	
 	public AuthResponse() {
 		super();
 	}
 
-	public AuthResponse(String token, String celular) {
+	public AuthResponse(String token, Long id) {
 		super();
 		this.token = token;
-		this.celular = celular;
+		this.userId = id;
 	}
 
 	public String getToken() {
@@ -23,12 +23,12 @@ public class AuthResponse {
 		this.token = token;
 	}
 	
-	public String getCelular() {
-		return celular;
+	public Long getId() {
+		return userId;
 	}
 
-	public void setCelular(String celular) {
-		this.celular = celular;
+	public void setId(Long id) {
+		this.userId = id;
 	}
 	
 }

@@ -2,29 +2,29 @@ package com.entrenamiento.appbackend.data;
 
 public class AuthRequest {
 
-	private String celular;
-	private String contraseña;
+	private String cellphone;
+	private String password;
 	
 	public AuthRequest() {
 		super();
 	}
 	
-	public AuthRequest(String celular, String contraseña) {
+	public AuthRequest(String cellphone, String password) {
 		super();
-		this.celular = celular;
-		this.contraseña = contraseña;
+		this.cellphone = cellphone;
+		this.password = password;
 	}
-	public String getCelular() {
-		return celular;
+	public String getCellphone() {
+		return cellphone;
 	}
-	public void setCelular(String celular) {
-		this.celular = celular;
+	public void setCellphone(String cellphone) {
+		this.cellphone = cellphone;
 	}
-	public String getContraseña() {
-		return contraseña;
+	public String getPassword() {
+		return password;
 	}
-	public void setContraseña(String contraseña) {
-		this.contraseña = contraseña;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	
 }

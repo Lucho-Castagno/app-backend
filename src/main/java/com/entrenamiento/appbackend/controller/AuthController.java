@@ -21,15 +21,15 @@ public class AuthController {
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> iniciarSesion(@RequestBody AuthRequest request) {
+	public ResponseEntity<?> login(@RequestBody AuthRequest request) {
 		
-		return this.authService.iniciarSesion(request);
+		return this.authService.login(request);
 		
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<String> registrarse(@RequestBody RegisterRequest request) {
-		return this.authService.registrarse(request);
+	public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+		return this.authService.register(request);
 	}
 
 }

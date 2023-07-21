@@ -11,20 +11,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.entrenamiento.appbackend.exception.AppRequestException;
-import com.entrenamiento.appbackend.repository.UsuarioRepository;
+import com.entrenamiento.appbackend.repository.UserRepository;
 
 @Configuration
 public class AppConfig {
 	
-	private final UsuarioRepository usuarioRepository;
+	private final UserRepository userRepository;
 	
-	public AppConfig(UsuarioRepository usuarioRepository) {
-		this.usuarioRepository = usuarioRepository;
+	public AppConfig(UserRepository userRepository) {
+		this.userRepository = userRepository;
 	}
 
     @Bean
     UserDetailsService userDetailsService() {
-		return username -> usuarioRepository.findByCelular(username).orElseThrow(() -> new AppRequestException("No se encontro al usuario especificado."));
+		return username -> userRepository.findByCellphone(username).orElseThrow(() -> new AppRequestException("No se encontro al usuario especificado."));
 	}
 	
 	@Bean

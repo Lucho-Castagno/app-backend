@@ -12,26 +12,26 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Patente {
+public class Plate {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String cadena;
+	private String plate;
 	
-	@ManyToMany(mappedBy = "patentes")
-    private Set<Usuario> usuarios = new HashSet<>();
+	@ManyToMany(mappedBy = "plates")
+    private Set<Usser> users = new HashSet<>();
 	
-	@OneToMany(mappedBy = "patente")
-	private List<Estacionamiento> estacionamientos;
+	@OneToMany(mappedBy = "plate")
+	private List<Parking> parkings;
 
-	public Patente(String cadena) {
+	public Plate(String plate) {
 		super();
-		this.cadena = cadena;
+		this.plate = plate;
 	}
 
-	public Patente() {
+	public Plate() {
 		super();
 	}
 
@@ -39,16 +39,16 @@ public class Patente {
 		return id;
 	}
 
-	public String getCadena() {
-		return cadena;
+	public String getPlate() {
+		return plate;
 	}
 
-	public void setCadena(String cadena) {
-		this.cadena = cadena;
+	public void setPlate(String plate) {
+		this.plate = plate;
 	}
 	
-	public void addUsuario(Usuario usuario) {
-		this.usuarios.add(usuario);
+	public void addUser(Usser usser) {
+		this.users.add(usser);
 	}
 	
 }

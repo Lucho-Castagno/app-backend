@@ -12,92 +12,92 @@ import com.entrenamiento.appbackend.data.AuthRequest;
 import com.entrenamiento.appbackend.data.AuthResponse;
 import com.entrenamiento.appbackend.data.RegisterRequest;
 import com.entrenamiento.appbackend.exception.AppRequestException;
-import com.entrenamiento.appbackend.model.CtaCorriente;
-import com.entrenamiento.appbackend.model.Usuario;
-import com.entrenamiento.appbackend.repository.CtaCorrienteRepository;
-import com.entrenamiento.appbackend.repository.UsuarioRepository;
+import com.entrenamiento.appbackend.model.CheckingAccount;
+import com.entrenamiento.appbackend.model.Usser;
+import com.entrenamiento.appbackend.repository.CheckingAccountRepository;
+import com.entrenamiento.appbackend.repository.UserRepository;
 
 @Service
 public class AuthService {
 	
-	private final UsuarioRepository usuarioRepository;
-	private final CtaCorrienteRepository ctaCorrienteRepository;
+	private final UserRepository userRepository;
+	private final CheckingAccountRepository checkingAccountRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
 	private final AuthenticationManager authenticationManager;
 	
-	public AuthService(UsuarioRepository usuarioRepository,
+	public AuthService(UserRepository userRepository,
 			PasswordEncoder passwordEncoder,
 			JwtService jwtService,
-			CtaCorrienteRepository ctaCorrienteRepository,
+			CheckingAccountRepository checkingAccountRepository,
 			AuthenticationManager authenticationManager) {
-		this.usuarioRepository = usuarioRepository;
-		this.ctaCorrienteRepository = ctaCorrienteRepository;
+		this.userRepository = userRepository;
+		this.checkingAccountRepository = checkingAccountRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtService = jwtService;
 		this.authenticationManager = authenticationManager;
 	}
 	
-	public ResponseEntity<String> registrarse(RegisterRequest request) {
+	public ResponseEntity<String> register(RegisterRequest request) {
 		
-		Optional<Usuario> usuarioExiste = this.usuarioRepository.findByCelular(request.getCelular()); 
-		if (usuarioExiste.isPresent()) {
-			throw new AppRequestException("El celular que intenta ingresar ya esta registrado en el sistema.");
-		}
-
-		if (!validarCelular(request.getCelular())) {
-			throw new AppRequestException("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
-		}
-
-		if (!validarMail(request.getEmail())) {
-			throw new AppRequestException("El formato del email es invalido.");
-		}
-
-		if (request.getCelular().isEmpty() || request.getContraseña().isEmpty() || request.getEmail().isEmpty()) {
+		if (request.getCellphone().isEmpty() && request.getPassword().isEmpty() && request.getEmail().isEmpty()) {
 			throw new AppRequestException("Todos los campos son requeridos");
 		}
 		
-		CtaCorriente ctaCorriente = new CtaCorriente();
-		this.ctaCorrienteRepository.save(ctaCorriente);
+		if (!cellphoneValidation(request.getCellphone())) {
+			throw new AppRequestException("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
+		}
+
+		if (!emailValidation(request.getEmail())) {
+			throw new AppRequestException("El formato del email es invalido.");
+		}
 		
-		Usuario usuario = new Usuario(
-				request.getCelular(),
-				passwordEncoder.encode(request.getContraseña()),
+		Optional<Usser> presentUser = this.userRepository.findByCellphone(request.getCellphone()); 
+		if (presentUser.isPresent()) {
+			throw new AppRequestException("El celular que intenta ingresar ya esta registrado en el sistema.");
+		}
+
+		CheckingAccount checkingAccount = new CheckingAccount();
+		this.checkingAccountRepository.save(checkingAccount);
+		
+		Usser usser = new Usser(
+				request.getCellphone(),
+				passwordEncoder.encode(request.getPassword()),
 				request.getEmail()
 				);
 		
-		usuario.setCtaCorriente(ctaCorriente);
-		this.usuarioRepository.save(usuario);
+		usser.setAccount(checkingAccount);
+		this.userRepository.save(usser);
 		
 		return ResponseEntity.ok().body("Usuario registrado con exito!");
 	}
 	
-	public ResponseEntity<?> iniciarSesion(AuthRequest request) {
+	public ResponseEntity<?> login(AuthRequest request) {
 		
-		if (request.getCelular().isEmpty() || request.getContraseña().isEmpty()) {
+		if (request.getCellphone().isEmpty() && request.getPassword().isEmpty()) {
 			throw new AppRequestException("Todos los campos son requeridos.");
 		}
 		
 		this.authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
-						request.getCelular(),
-						request.getContraseña()
+						request.getCellphone(),
+						request.getPassword()
 						)
 				); 
-		Usuario usuario = usuarioRepository.findByCelular(request.getCelular()).orElseThrow(() -> new AppRequestException("El usuario no esta registrado en el sistema."));
+		Usser usser = userRepository.findByCellphone(request.getCellphone()).orElseThrow(() -> new AppRequestException("El usuario no esta registrado en el sistema."));
 		
-		var jwtToken = jwtService.generateToken(usuario);
-		return ResponseEntity.ok(new AuthResponse(jwtToken, usuario.getCelular()));
+		var jwtToken = jwtService.generateToken(usser);
+		return ResponseEntity.ok(new AuthResponse(jwtToken, usser.getId()));
 	}
 	
-	private boolean validarCelular(String celular) {
-		String patron = "^(?!0|15)[0-9]{2}[0-9]{8}$";
-		return celular.matches(patron);
+	private boolean cellphoneValidation(String cellphone) {
+		String pattern = "^(?!0|15)[0-9]{2}[0-9]{8}$";
+		return cellphone.matches(pattern);
 	}
 	
-	private boolean validarMail(String mail) {
-		String patron = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-		return mail.matches(patron);
+	private boolean emailValidation(String email) {
+		String pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+		return email.matches(pattern);
 	}
 	
 }
