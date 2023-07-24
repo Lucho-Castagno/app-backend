@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.repository.UserRepository;
 
@@ -43,6 +44,11 @@ public class AppConfig {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+	
+	@Bean
+	GlobalData globalData() {
+		return new GlobalData();
 	}
 	
 }

@@ -4,7 +4,6 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.Holiday;
+import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CheckingAccount;
 import com.entrenamiento.appbackend.model.Parking;
@@ -26,16 +26,13 @@ public class ParkingService {
 	private final ParkingRepository parkingRepository;
 	private final CheckingAccountService checkingAccountService;
 	private final PlateRepository plateRepository;
+	private final GlobalData globalData;
 	
-	private static final LocalTime OPENING_HOUR = LocalTime.of(8, 0);
-	private static final LocalTime CLOSING_HOUR = LocalTime.of(20, 0);
-	private static final Double FRACTIONATION_SCHEME = 15.0;
-	private static final Double FRACTION_COST = 2.50;
-	
-	public ParkingService(ParkingRepository parkingRepository, CheckingAccountService checkingAccountService, PlateRepository plateRepository) {
+	public ParkingService(ParkingRepository parkingRepository, CheckingAccountService checkingAccountService, PlateRepository plateRepository, GlobalData globalData) {
 		this.parkingRepository = parkingRepository;
 		this.checkingAccountService = checkingAccountService;
 		this.plateRepository = plateRepository;
+		this.globalData = globalData;
 	}
 	
 	public ResponseEntity<List<Parking>> parkings() {
@@ -48,7 +45,7 @@ public class ParkingService {
 			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos.");
 		}
 		
-		if (LocalDateTime.now().toLocalTime().isBefore(OPENING_HOUR)) {
+		if (LocalDateTime.now().toLocalTime().isBefore(globalData.getOpeningHour())) {
 			throw new AppRequestException("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
 		}
 		
@@ -65,7 +62,7 @@ public class ParkingService {
 			throw new AppRequestException("Cuenta Corriente no encontrada.");
 		}
 		
-		if (checkingAccount.getBalance() < FRACTION_COST) {
+		if (checkingAccount.getBalance() < globalData.getFractionCost()) {
 			throw new AppRequestException("Saldo insuficiente para iniciar un estacionamiento.");
 		}
 		
@@ -88,14 +85,20 @@ public class ParkingService {
 			throw new AppRequestException("No se encontro el estacionamiento indicado.");
 		}
 		
+		/*
+		 * Esta seccion de codigo se comento para poder finalizar un estacionamiento despues de la hora de cierre, feriado o fin de semana,
+		 * para que no quede colgado el estacionamiento.
+		 * Para el cobro, se van a tomar las horas en las cuales el sistema esta funcionando, es decir, entre las  8 AM y las 8 PM.
+		 * 
 		if (isHoliday() || isWeekend()) { 
 			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos."); 
 		}
 		
 		LocalDateTime end = LocalDateTime.now();
-		if (end.toLocalTime().isAfter(CLOSING_HOUR)) {
+		if (end.toLocalTime().isAfter(globalData.getClosingHour())) {
 			throw new AppRequestException("El horario de cierre del sistema de estacionamientos es a las 20:00 pm");
 		}
+		*/
 		
 		Parking parking = optionalParking.get();
 		if (parking.getEnd() != null) { 
@@ -103,7 +106,7 @@ public class ParkingService {
 		}
 		
 		long fractions = parkingHoursCalculation(parking.getStart(), LocalDateTime.now());
-		double totalAmount = FRACTION_COST * fractions;
+		double totalAmount = globalData.getFractionCost() * fractions;
 		
 		this.checkingAccountService.performTransaction(parking.getUser().getId(), totalAmount);
 		
@@ -126,31 +129,31 @@ public class ParkingService {
 		Duration duration = Duration.between(start, end);
 		// para el caso en el que el estacionamiento inicie y termine en el mismo dia
 		if (start.toLocalDate().equals(end.toLocalDate())) {
-			fractions = duration.toMinutes() / FRACTIONATION_SCHEME;
+			fractions = duration.toMinutes() / globalData.getFractionationScheme();
 			
 		} else {
 			// caso en el que inicie en un dia y termine en el siguiente
 			long days = duration.toDays();
 			
-			Duration firstDayDuration = Duration.between(start.toLocalTime(), CLOSING_HOUR);
-			Duration lastDayDuration = Duration.between(OPENING_HOUR, end.toLocalTime());
+			Duration firstDayDuration = Duration.between(start.toLocalTime(), globalData.getClosingHour());
+			Duration lastDayDuration = Duration.between(globalData.getOpeningHour(), end.toLocalTime());
 			
 			if ( days <= 1) {
 				
-				fractions = (firstDayDuration.toMinutes() + lastDayDuration.toMinutes() / FRACTIONATION_SCHEME);
+				fractions = (firstDayDuration.toMinutes() + lastDayDuration.toMinutes() / globalData.getFractionationScheme());
 			
 			} else {
 				// caso en el que tome mas de un dia (diferentes dias) ej. empieza un lunes y termina un jueves
 				long fullDays = (end.getDayOfMonth() - start.getDayOfMonth()) + 1;
 				long inBetweenDays = fullDays - 2;
-				double fullHoursToMinutes = ((inBetweenDays * (CLOSING_HOUR.getHour() - OPENING_HOUR.getHour())) * 60) / FRACTIONATION_SCHEME;
+				double fullHoursToMinutes = ((inBetweenDays * (globalData.getClosingHour().getHour() - globalData.getOpeningHour().getHour())) * 60) / globalData.getFractionationScheme();
 				
-				fractions = ((firstDayDuration.toMinutes() + lastDayDuration.toMinutes()) / FRACTIONATION_SCHEME) + fullHoursToMinutes;
+				fractions = ((firstDayDuration.toMinutes() + lastDayDuration.toMinutes()) / globalData.getFractionationScheme()) + fullHoursToMinutes;
 			}
 
 		}
 		
-		if ((fractions % FRACTIONATION_SCHEME) > 0) fractions ++;
+		if ((fractions % globalData.getFractionationScheme()) > 0) fractions ++;
 		return (long) fractions;
 		
 	}
