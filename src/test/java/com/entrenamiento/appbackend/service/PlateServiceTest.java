@@ -2,11 +2,12 @@ package com.entrenamiento.appbackend.service;
 
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,11 +48,8 @@ public class PlateServiceTest {
 	@Test
 	void testCreate_badFormat() {
 		
-		try {
-	        plateService.create(1L, "ABC123a");
-	    } catch (AppRequestException e) {
-	        assertThat(e.getMessage()).isEqualTo("Formato de patente: AAA000 ó AA000AA.");
-	    }
+		Exception e = assertThrows(AppRequestException.class, () ->  plateService.create(1L, "ABC123a"));
+		assertThat(e.getMessage()).isEqualTo("Formato de patente: AAA000 ó AA000AA.");
 		
 	}
 	
@@ -60,11 +58,46 @@ public class PlateServiceTest {
 		
 		when(userRepository.findById(1L)).thenReturn(Optional.empty());
 		
-		try {
-	        plateService.create(1L, "ABC123");
-	    } catch (AppRequestException e) {
-	        assertThat(e.getMessage()).isEqualTo("No se encontro al usuario.");
-	    }
+		Exception e = assertThrows(AppRequestException.class, () ->  plateService.create(1L, "ABC123"));
+		assertThat(e.getMessage()).isEqualTo("No se encontro al usuario.");
+		
+	}
+	
+	@Test
+	void testCreate_userAlreadyHasThatPlate() {
+		
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+		
+		plateService.create(1L, "ABC123");
+		
+		Exception e = assertThrows(AppRequestException.class, () ->  plateService.create(1L, "aBc123"));
+		assertThat(e.getMessage()).isEqualTo("La patente ya esta asociada a este usuario.");
+		
+	}
+	
+	@Test
+	void testPlates_notEmpty() {
+		
+		Plate plateOne = new Plate("ABC123");
+		Plate plateTwo = new Plate("CBA321");
+		
+		when(plateRepository.findAll()).thenReturn(List.of(plateOne, plateTwo));
+		
+		List<Plate> plateList = plateService.plates().getBody();
+		
+		assertThat(!plateList.isEmpty());
+		assertThat(plateList.size()).isEqualTo(2);
+		
+	}
+	
+	@Test
+	void testPlates_empty() {
+		
+		when(plateRepository.findAll()).thenReturn(List.of());
+		
+		List<Plate> plateList = plateService.plates().getBody();
+		
+		assertTrue(plateList.isEmpty());
 		
 	}
 	

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.Holiday;
+import com.entrenamiento.appbackend.SystemClock;
 import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CheckingAccount;
@@ -27,12 +28,14 @@ public class ParkingService {
 	private final CheckingAccountService checkingAccountService;
 	private final PlateRepository plateRepository;
 	private final GlobalData globalData;
+	private final SystemClock sClock;
 	
-	public ParkingService(ParkingRepository parkingRepository, CheckingAccountService checkingAccountService, PlateRepository plateRepository, GlobalData globalData) {
+	public ParkingService(ParkingRepository parkingRepository, CheckingAccountService checkingAccountService, PlateRepository plateRepository, GlobalData globalData, SystemClock sClock) {
 		this.parkingRepository = parkingRepository;
 		this.checkingAccountService = checkingAccountService;
 		this.plateRepository = plateRepository;
 		this.globalData = globalData;
+		this.sClock = sClock;
 	}
 	
 	public ResponseEntity<List<Parking>> parkings() {
@@ -45,7 +48,7 @@ public class ParkingService {
 			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos.");
 		}
 		
-		if (LocalDateTime.now().toLocalTime().isBefore(globalData.getOpeningHour())) {
+		if (sClock.localTimeNow().isBefore(globalData.getOpeningHour())) {
 			throw new AppRequestException("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
 		}
 		
@@ -105,12 +108,12 @@ public class ParkingService {
 			throw new AppRequestException("El estacionamiento indicado ya finalizó.");
 		}
 		
-		long fractions = parkingHoursCalculation(parking.getStart(), LocalDateTime.now());
+		long fractions = parkingHoursCalculation(parking.getStart(), sClock.localDateTimeNow());
 		double totalAmount = globalData.getFractionCost() * fractions;
 		
 		this.checkingAccountService.performTransaction(parking.getUser().getId(), totalAmount);
 		
-		parking.setEnd(LocalDateTime.now());
+		parking.setEnd(sClock.localDateTimeNow());
 		parking.setAmount(totalAmount);
 		parkingRepository.save(parking);
 		
@@ -167,13 +170,13 @@ public class ParkingService {
 	}
 	
 	private boolean isHoliday() {
-		LocalDate actualDate = LocalDate.now();
+		LocalDate actualDate = sClock.localDateNow();
 		int actualYear = actualDate.getYear();
 		return Arrays.stream(Holiday.values()).anyMatch(holiday -> holiday.getDate(actualYear).equals(actualDate));
 	}
 	
 	private boolean isWeekend() {
-		LocalDateTime actualDate = LocalDateTime.now();
+		LocalDateTime actualDate = sClock.localDateTimeNow();
 		if (actualDate.getDayOfWeek().equals(DayOfWeek.SATURDAY) || actualDate.getDayOfWeek().equals(DayOfWeek.SUNDAY)) return true;
 		return false;
 	}
