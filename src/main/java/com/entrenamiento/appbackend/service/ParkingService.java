@@ -108,12 +108,14 @@ public class ParkingService {
 			throw new AppRequestException("El estacionamiento indicado ya finalizó.");
 		}
 		
-		long fractions = parkingHoursCalculation(parking.getStart(), sClock.localDateTimeNow());
+		LocalDateTime endTime = sClock.localDateTimeNow();
+		
+		long fractions = parkingHoursCalculation(parking.getStart(), endTime);
 		double totalAmount = globalData.getFractionCost() * fractions;
 		
 		this.checkingAccountService.performTransaction(parking.getUser().getId(), totalAmount);
 		
-		parking.setEnd(sClock.localDateTimeNow());
+		parking.setEnd(endTime);
 		parking.setAmount(totalAmount);
 		parkingRepository.save(parking);
 		

@@ -1,34 +1,34 @@
 package com.entrenamiento.appbackend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.entrenamiento.appbackend.Holiday;
 import com.entrenamiento.appbackend.SystemClock;
 import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CheckingAccount;
+import com.entrenamiento.appbackend.model.Parking;
 import com.entrenamiento.appbackend.model.Plate;
 import com.entrenamiento.appbackend.model.Usser;
 import com.entrenamiento.appbackend.repository.ParkingRepository;
@@ -56,6 +56,9 @@ public class ParkingServiceTest {
 	@InjectMocks
 	private ParkingService parkingService;
 	
+	@Captor
+	ArgumentCaptor<Parking> parkingCaptor;
+	
 	private CheckingAccount accountWithBalance;
 	private CheckingAccount accountWithoutBalance;
 	private Usser user;
@@ -68,6 +71,7 @@ public class ParkingServiceTest {
 		this.accountWithoutBalance.setBalance(0.0);
 		this.user = new Usser("1122916097", "password", "email@email.com");
 		this.plate = new Plate("ABC123");
+		this.accountWithBalance.setUser(user);
 	}
 	
 	@Test
@@ -94,7 +98,7 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_beforeOpeningHour() {
 		
-		firstStage();
+		parkingConfigurationOne();
 		
 		when(systemClock.localTimeNow()).thenReturn(LocalTime.of(7, 0));
 		
@@ -106,8 +110,8 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_parkingAlreadyStartedForUser() {
 		
-		firstStage();
-		secondStage();
+		parkingConfigurationOne();
+		parkingConfigurationTwo();
 		
 		when(parkingRepository.existsByUserIdAndEndParkingIsNull(1L)).thenReturn(true);
 		
@@ -119,9 +123,9 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_parkingAlreadyStartedForPlate() {
 		
-		firstStage();
-		secondStage();
-		thirdStage();
+		parkingConfigurationOne();
+		parkingConfigurationTwo();
+		parkingConfigurationThree();
 		
 		when(parkingRepository.existsByPlatePlateAndEndParkingIsNull(plate.getPlate())).thenReturn(true);
 		
@@ -133,10 +137,10 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_accountNotFound() {
 		
-		firstStage();
-		secondStage();
-		thirdStage();
-		fourthStage();
+		parkingConfigurationOne();
+		parkingConfigurationTwo();
+		parkingConfigurationThree();
+		parkingConfigurationFour();
 		
 		when(checkingAccountService.findUserAccount(1L)).thenReturn(null);
 		
@@ -148,12 +152,12 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_accountWithoutBalance() {
 		
-		firstStage();
-		secondStage();
-		thirdStage();
-		fourthStage();
-		fifthStage();
-		fifthStage_bis();
+		parkingConfigurationOne();
+		parkingConfigurationTwo();
+		parkingConfigurationThree();
+		parkingConfigurationFour();
+		parkingConfigurationFive();
+		parkingConfigurationFiveBis();
 		
 		Exception e = assertThrows(AppRequestException.class, () -> parkingService.startParking(1L, plate.getPlate()));
 		assertThat(e.getMessage()).isEqualTo("Saldo insuficiente para iniciar un estacionamiento.");
@@ -163,12 +167,12 @@ public class ParkingServiceTest {
 	@Test
 	void testStartParking_correct() {
 		
-		firstStage();
-		secondStage();
-		thirdStage();
-		fourthStage();
-		fifthStage();
-		sixthStage();
+		parkingConfigurationOne();
+		parkingConfigurationTwo();
+		parkingConfigurationThree();
+		parkingConfigurationFour();
+		parkingConfigurationFive();
+		parkingConfigurationSix();
 		
 		when(plateRepository.findByPlate(plate.getPlate())).thenReturn(Optional.of(plate));
 		
@@ -177,37 +181,103 @@ public class ParkingServiceTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isEqualTo("Estacionamiento iniciado!");
 		
+		verify(parkingRepository).save(parkingCaptor.capture());
+		Parking startedParking = parkingCaptor.getValue();
+		
+		assertEquals(startedParking.getUser(), user);
+		assertEquals(startedParking.getStart().toLocalDate(), LocalDateTime.now().toLocalDate());
+		assertEquals(startedParking.getStart().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalTime().toSecondOfDay());
+		assertNull(startedParking.getEnd());
+		
 	}
+	
+	@Test
+	void testFinishParking_parkingNotFound() {
+		
+		when(parkingRepository.findById(1L)).thenReturn(Optional.empty());
+		
+		Exception e = assertThrows(AppRequestException.class, () -> parkingService.finishParking(1L));
+		assertThat(e.getMessage()).isEqualTo("No se encontro el estacionamiento indicado.");
+		
+	}
+	
+	@Test
+	void testFinishParking_parkingAlreadyFinished() {
+		
+		Parking newParking = new Parking();
+		newParking.setUser(user);
+		newParking.setPlate(plate);
+		newParking.setEnd(LocalDateTime.now());
+		when(parkingRepository.findById(1L)).thenReturn(Optional.of(newParking));
+		
+		Exception e = assertThrows(AppRequestException.class, () -> parkingService.finishParking(1L));
+		assertThat(e.getMessage()).isEqualTo("El estacionamiento indicado ya finalizó.");
+		
+	}
+	
+	@Test
+	void testFinishParking_correct() {
+		
+		LocalDateTime localTime = LocalDateTime.now();
+		
+		Parking newParking = new Parking();
+		newParking.setUser(user);
+		newParking.setPlate(plate);
+		parkingConfigurationFive();
+		when(globalData.getFractionationScheme()).thenReturn(15.0);
+		
+		when(systemClock.localDateTimeNow()).thenReturn(localTime);
+		when(parkingRepository.findById(1L)).thenReturn(Optional.of(newParking));
+		
+		ResponseEntity<String> response = parkingService.finishParking(1L);
+		
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo("Estacionamiento finalizado!");
+		
+		verify(parkingRepository).save(parkingCaptor.capture());
+		Parking finishParking = parkingCaptor.getValue();
+		
+		assertEquals(finishParking.getUser(), user);
+		assertEquals(finishParking.getStart().toLocalDate(), newParking.getStart().toLocalDate());
+		assertEquals(finishParking.getStart().toLocalTime().toSecondOfDay(), newParking.getStart().toLocalTime().toSecondOfDay());
+		assertNotNull(finishParking.getEnd());
+		assertEquals(finishParking.getEnd().toLocalDate(), localTime.toLocalDate());
+		assertEquals(finishParking.getEnd().toLocalTime().toSecondOfDay(), localTime.toLocalTime().toSecondOfDay());
+		assertThat(finishParking.getAmount()).isEqualTo(0);
+		
+	}
+	
+	
 	
 	// a partir de este punto se encuentran los metodos que engloban el codigo repetido, dado por "etapas de ejecucion" por asi decirlo
 	
-	void firstStage() {
+	void parkingConfigurationOne() {
 		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
 		when(systemClock.localDateNow()).thenReturn(LocalDate.of(2023, 8, 16));
 		when(systemClock.localDateTimeNow()).thenReturn(LocalDateTime.of(2023, 8, 16, 7, 0));
 	}
 	
-	void secondStage() {
+	void parkingConfigurationTwo() {
 		when(systemClock.localTimeNow()).thenReturn(LocalTime.of(9, 0));
 	}
 	
-	void thirdStage() {
+	void parkingConfigurationThree() {
 		when(parkingRepository.existsByUserIdAndEndParkingIsNull(1L)).thenReturn(false);
 	}
 	
-	void fourthStage() {
+	void parkingConfigurationFour() {
 		when(parkingRepository.existsByPlatePlateAndEndParkingIsNull(plate.getPlate())).thenReturn(false);
 	}
 	
-	void fifthStage() {
+	void parkingConfigurationFive() {
 		when(globalData.getFractionCost()).thenReturn(2.50);
 	}
 	
-	void fifthStage_bis() {
+	void parkingConfigurationFiveBis() {
 		when(checkingAccountService.findUserAccount(1L)).thenReturn(accountWithoutBalance);
 	}
 	
-	void sixthStage() {
+	void parkingConfigurationSix() {
 		when(checkingAccountService.findUserAccount(1L)).thenReturn(accountWithBalance);
 	}
 	

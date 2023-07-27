@@ -2,7 +2,6 @@ package com.entrenamiento.appbackend.model;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +22,6 @@ public class Parking {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@CreatedDate
 	private LocalDateTime start;
 	
 	private LocalDateTime endParking;
@@ -41,6 +39,7 @@ public class Parking {
 
 	public Parking() {
 		super();
+		this.start = LocalDateTime.now();
 	}
 
 	public Parking(Long id, LocalDateTime start, LocalDateTime end, double amount, Plate plate, Usser usser) {
