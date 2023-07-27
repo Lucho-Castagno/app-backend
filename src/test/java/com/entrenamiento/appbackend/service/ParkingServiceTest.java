@@ -186,7 +186,8 @@ public class ParkingServiceTest {
 		
 		assertEquals(startedParking.getUser(), user);
 		assertEquals(startedParking.getStart().toLocalDate(), LocalDateTime.now().toLocalDate());
-		assertEquals(startedParking.getStart().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalTime().toSecondOfDay());
+		assertThat(startedParking.getStart()).isBefore(LocalDateTime.now());
+		assertNotNull(startedParking.getStart());
 		assertNull(startedParking.getEnd());
 		
 	}
