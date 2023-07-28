@@ -1,19 +1,25 @@
 package com.entrenamiento.appbackend.service;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.Plate;
@@ -33,6 +39,9 @@ public class PlateServiceTest {
 	@InjectMocks
 	private PlateService plateService;
 	
+	@Captor
+	ArgumentCaptor<Usser> userCaptor;
+	
 	private Usser user = new Usser("1122916097", "password", "email@email.com");
 	
 	@Test
@@ -40,9 +49,38 @@ public class PlateServiceTest {
 		
 		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 		
-		Plate plate = (Plate) plateService.create(1L, "ABC123").getBody();
+		ResponseEntity<?> response = plateService.create(1L, "ABC123");
 		
-		assertThat(plate.getPlate().equals("ABC123"));
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		Plate plate = (Plate) response.getBody();
+		assertEquals(plate.getPlate(), "ABC123");
+		
+		verify(userRepository).save(userCaptor.capture());
+		Usser userCaptured = userCaptor.getValue();
+		
+		assertEquals(userCaptured.getPlates().get(0), plate);
+		
+	}
+	
+	@Test
+	void testCreate_correctButPlateAlreadyExist() {
+		
+		Plate plateThatExist = new Plate("ABC123");
+		
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+		when(plateRepository.findByPlate("ABC123")).thenReturn(Optional.of(plateThatExist));
+		
+		ResponseEntity<?> response = plateService.create(1L, "ABC123");
+		
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		Plate plate = (Plate) response.getBody();
+		assertEquals(plate.getPlate(), "ABC123");
+		
+		verify(userRepository).save(userCaptor.capture());
+		Usser userCaptured = userCaptor.getValue();
+		
+		assertEquals(userCaptured.getPlates().get(0), plate);
+		
 	}
 	
 	@Test

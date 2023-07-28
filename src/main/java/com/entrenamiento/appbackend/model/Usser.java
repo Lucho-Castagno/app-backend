@@ -86,10 +86,6 @@ public class Usser implements UserDetails{
 		this.cellphone = cellphone;
 	}
 
-	//public String getContraseña() {
-	//	return contraseña;
-	//}
-
 	public void setPassword(String password) {
 		this.password = password;
 	}

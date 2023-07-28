@@ -145,11 +145,21 @@ public class ParkingService {
 			
 			if ( days <= 1) {
 				
-				fractions = (firstDayDuration.toMinutes() + lastDayDuration.toMinutes() / globalData.getFractionationScheme());
+				fractions = (firstDayDuration.toMinutes() + lastDayDuration.toMinutes()) / globalData.getFractionationScheme();
 			
 			} else {
 				// caso en el que tome mas de un dia (diferentes dias) ej. empieza un lunes y termina un jueves
-				long fullDays = (end.getDayOfMonth() - start.getDayOfMonth()) + 1;
+				long fullDays = 0;
+				
+				// este if es mas que nada para ver si el estacionamiento tomo tanto dias de un mes como del siguiente
+				if (end.getMonth().equals(start.getMonth())) {
+					fullDays = (end.getDayOfMonth() - start.getDayOfMonth()) + 1; 
+				} else {
+					long daysInStartMonth = start.getMonth().length(false) - start.getDayOfMonth() + 1;
+					long daysInEndMonth = end.getDayOfMonth();
+				    fullDays = daysInStartMonth + daysInEndMonth;
+				}
+ 				
 				long inBetweenDays = fullDays - 2;
 				double fullHoursToMinutes = ((inBetweenDays * (globalData.getClosingHour().getHour() - globalData.getOpeningHour().getHour())) * 60) / globalData.getFractionationScheme();
 				
