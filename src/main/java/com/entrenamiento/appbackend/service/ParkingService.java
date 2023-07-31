@@ -109,8 +109,22 @@ public class ParkingService {
 		}
 		
 		LocalDateTime endTime = sClock.localDateTimeNow();
+		long fractions;
 		
-		long fractions = parkingHoursCalculation(parking.getStart(), endTime);
+		if (endTime.toLocalTime().isAfter(globalData.getClosingHour())) {
+			// caso en el que se finaliza el estacionamiento fuera de la hora de funcionamiento del sistema,
+			// por lo que se cuentan las horas de estacionamiento hasta las 20 hrs
+			fractions = parkingHoursCalculation(parking.getStart(), sClock.localDateNow().atTime(globalData.getClosingHour()));
+		} else if (endTime.toLocalTime().isBefore(globalData.getOpeningHour())) {
+			// caso en el que se finaliza el estacionamiento fuera de la hora de funcionamiento del sistema,
+			// pero antes de la hora de apertura
+			fractions = parkingHoursCalculation(parking.getStart(), sClock.localDateNow().minusDays(1).atTime(globalData.getClosingHour()));
+		} else {
+			// caso en el que se finaliza el estacionamiento dentro de la hora de funcionamiento del sistema,
+			// por lo que se usa endTime como valor a pasar a la funcion parkingHoursCalculation().
+			fractions = parkingHoursCalculation(parking.getStart(), endTime);
+		}
+		
 		double totalAmount = globalData.getFractionCost() * fractions;
 		
 		this.checkingAccountService.performTransaction(parking.getUser().getId(), totalAmount);

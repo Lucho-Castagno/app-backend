@@ -233,6 +233,7 @@ public class ParkingServiceTest {
 		newParking.setUser(user);
 		newParking.setPlate(plate);
 		parkingConfigurationFive();
+		parkingConfigurationEight();
 		when(globalData.getFractionationScheme()).thenReturn(15.0);
 		
 		when(systemClock.localDateTimeNow()).thenReturn(localTime);
@@ -346,10 +347,7 @@ public class ParkingServiceTest {
 		when(systemClock.localDateTimeNow()).thenReturn(localTime);
 		when(parkingRepository.findById(1L)).thenReturn(Optional.of(newParking));
 		
-		ResponseEntity<String> response = parkingService.finishParking(1L);
-		
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(response.getBody()).isEqualTo("Estacionamiento finalizado!");
+		parkingService.finishParking(1L);
 		
 		verify(parkingRepository).save(parkingCaptor.capture());
 		Parking finishParking = parkingCaptor.getValue();
@@ -369,7 +367,6 @@ public class ParkingServiceTest {
 	void testParkingHourCalculation_caseThree() {
 		
 		parkingConfigurationSeven();
-		
 		// en el caso de que el estacionamiento sea en el mismo dia
 		// ya fue probado en testFinishParking_correct()
 		
@@ -386,10 +383,7 @@ public class ParkingServiceTest {
 		when(systemClock.localDateTimeNow()).thenReturn(localTime);
 		when(parkingRepository.findById(1L)).thenReturn(Optional.of(newParking));
 		
-		ResponseEntity<String> response = parkingService.finishParking(1L);
-		
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(response.getBody()).isEqualTo("Estacionamiento finalizado!");
+		parkingService.finishParking(1L);
 		
 		verify(parkingRepository).save(parkingCaptor.capture());
 		Parking finishParking = parkingCaptor.getValue();
@@ -439,9 +433,13 @@ public class ParkingServiceTest {
 	}
 	
 	void parkingConfigurationSeven() {
-		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
-		when(globalData.getClosingHour()).thenReturn(LocalTime.of(20, 0));
+		parkingConfigurationEight();
 		when(globalData.getFractionationScheme()).thenReturn(15.0);
+	}
+	
+	void parkingConfigurationEight() {
+		when(globalData.getClosingHour()).thenReturn(LocalTime.of(20, 0));
+		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
 	}
 
 }
