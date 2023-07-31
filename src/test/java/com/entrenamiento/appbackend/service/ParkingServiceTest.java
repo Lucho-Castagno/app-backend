@@ -329,9 +329,7 @@ public class ParkingServiceTest {
 	@Test
 	void testParkingHourCalculation_caseTwo() {
 		
-		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
-		when(globalData.getClosingHour()).thenReturn(LocalTime.of(20, 0));
-		when(globalData.getFractionationScheme()).thenReturn(15.0);
+		parkingConfigurationSeven();
 		
 		// en el caso de que el estacionamiento sea en el mismo dia
 		// ya fue probado en testFinishParking_correct()
@@ -370,9 +368,7 @@ public class ParkingServiceTest {
 	@Test
 	void testParkingHourCalculation_caseThree() {
 		
-		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
-		when(globalData.getClosingHour()).thenReturn(LocalTime.of(20, 0));
-		when(globalData.getFractionationScheme()).thenReturn(15.0);
+		parkingConfigurationSeven();
 		
 		// en el caso de que el estacionamiento sea en el mismo dia
 		// ya fue probado en testFinishParking_correct()
@@ -440,6 +436,12 @@ public class ParkingServiceTest {
 	
 	void parkingConfigurationSix() {
 		when(checkingAccountService.findUserAccount(1L)).thenReturn(accountWithBalance);
+	}
+	
+	void parkingConfigurationSeven() {
+		when(globalData.getOpeningHour()).thenReturn(LocalTime.of(8, 0));
+		when(globalData.getClosingHour()).thenReturn(LocalTime.of(20, 0));
+		when(globalData.getFractionationScheme()).thenReturn(15.0);
 	}
 
 }

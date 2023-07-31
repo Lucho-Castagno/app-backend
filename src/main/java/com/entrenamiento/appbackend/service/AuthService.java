@@ -41,7 +41,7 @@ public class AuthService {
 	public ResponseEntity<String> register(RegisterRequest request) {
 		
 		if (request.getCellphone().isEmpty() && request.getPassword().isEmpty() && request.getEmail().isEmpty()) {
-			throw new AppRequestException("Todos los campos son requeridos");
+			throw new AppRequestException("Todos los campos son requeridos.");
 		}
 		
 		if (!cellphoneValidation(request.getCellphone())) {
