@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.MessageSourceUtils;
 import com.entrenamiento.appbackend.data.AuthRequest;
 import com.entrenamiento.appbackend.data.AuthResponse;
 import com.entrenamiento.appbackend.data.RegisterRequest;
@@ -41,20 +42,20 @@ public class AuthService {
 	public ResponseEntity<String> register(RegisterRequest request) {
 		
 		if (request.getCellphone().isEmpty() && request.getPassword().isEmpty() && request.getEmail().isEmpty()) {
-			throw new AppRequestException("Todos los campos son requeridos.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("register.error.allRequired"));
 		}
 		
 		if (!cellphoneValidation(request.getCellphone())) {
-			throw new AppRequestException("El celular debe tener 10 digitos, sin contar el 0 ni el 15.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("register.error.cellphoneFormat"));
 		}
 
 		if (!emailValidation(request.getEmail())) {
-			throw new AppRequestException("El formato del email es invalido.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("register.error.emailFormat"));
 		}
 		
 		Optional<Usser> presentUser = this.userRepository.findByCellphone(request.getCellphone()); 
 		if (presentUser.isPresent()) {
-			throw new AppRequestException("El celular que intenta ingresar ya esta registrado en el sistema.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("register.error.cellphoneExist"));
 		}
 
 		CheckingAccount checkingAccount = new CheckingAccount();
@@ -69,13 +70,13 @@ public class AuthService {
 		usser.setAccount(checkingAccount);
 		this.userRepository.save(usser);
 		
-		return ResponseEntity.ok().body("Usuario registrado con exito!");
+		return ResponseEntity.ok().body(MessageSourceUtils.getMessage("register.ok.created"));
 	}
 	
 	public ResponseEntity<?> login(AuthRequest request) {
 		
 		if (request.getCellphone().isEmpty() && request.getPassword().isEmpty()) {
-			throw new AppRequestException("Todos los campos son requeridos.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("login.error.allRequired"));
 		}
 		
 		this.authenticationManager.authenticate(
@@ -84,7 +85,7 @@ public class AuthService {
 						request.getPassword()
 						)
 				); 
-		Usser usser = userRepository.findByCellphone(request.getCellphone()).orElseThrow(() -> new AppRequestException("El usuario no esta registrado en el sistema."));
+		Usser usser = userRepository.findByCellphone(request.getCellphone()).orElseThrow(() -> new AppRequestException(MessageSourceUtils.getMessage("login.error.notRegistered")));
 		
 		var jwtToken = jwtService.generateToken(usser);
 		return ResponseEntity.ok(new AuthResponse(jwtToken, usser.getId()));

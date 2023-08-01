@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.MessageSourceUtils;
 import com.entrenamiento.appbackend.MovementType;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.CheckingAccount;
@@ -29,11 +30,11 @@ public class CheckingAccountService {
 		
 		Optional<CheckingAccount> account = this.checkingAccountRepository.findById(id);
 		if(account.isEmpty()) {
-			throw new AppRequestException("No se encontro la cuenta.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("loadBalance.error.accountNotFound"));
 		}
 		
 		if (amount < 100.0) {
-			throw new AppRequestException("El monto minimo es de $100.0 pesos.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("loadBalance.error.minimumAmount"));
 		}
 		
 		AccountMovements movement = new AccountMovements();

@@ -1,8 +1,11 @@
 package com.entrenamiento.appbackend.controller;
 
+import java.util.Locale;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +31,9 @@ public class AuthController {
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+	public ResponseEntity<String> register(
+			@RequestBody RegisterRequest request,
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
 		return this.authService.register(request);
 	}
 

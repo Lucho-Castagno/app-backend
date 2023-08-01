@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.entrenamiento.appbackend.MessageSourceUtils;
 import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.repository.UserRepository;
@@ -25,7 +26,7 @@ public class AppConfig {
 
     @Bean
     UserDetailsService userDetailsService() {
-		return username -> userRepository.findByCellphone(username).orElseThrow(() -> new AppRequestException("No se encontro al usuario especificado."));
+		return username -> userRepository.findByCellphone(username).orElseThrow(() -> new AppRequestException(MessageSourceUtils.getMessage("login.error.notRegistered")));
 	}
 	
 	@Bean

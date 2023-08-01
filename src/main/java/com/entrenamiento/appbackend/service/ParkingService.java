@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.entrenamiento.appbackend.Holiday;
+import com.entrenamiento.appbackend.MessageSourceUtils;
 import com.entrenamiento.appbackend.SystemClock;
 import com.entrenamiento.appbackend.data.GlobalData;
 import com.entrenamiento.appbackend.exception.AppRequestException;
@@ -45,28 +46,28 @@ public class ParkingService {
 	public ResponseEntity<String> startParking(Long id, String plateNumber) {
 		
 		if (isHoliday() || isWeekend()) {
-			throw new AppRequestException("El sistema no funciona en feriados, sabados y domingos.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.notWorkingToday"));
 		}
 		
 		if (sClock.localTimeNow().isBefore(globalData.getOpeningHour())) {
-			throw new AppRequestException("El horario de apertura del sistema de estacionamientos es a las 8:00 am");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.openingHour"));
 		}
 		
 		if (this.parkingRepository.existsByUserIdAndEndParkingIsNull(id)) {
-			throw new AppRequestException("Ya existe un estacionamiento iniciado por este usuario.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.alreadyStartedByUser"));
 		}
 		
 		if (this.parkingRepository.existsByPlatePlateAndEndParkingIsNull(plateNumber)) {
-			throw new AppRequestException("Ya existe un estacionamiento iniciado para esta patente.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.alreadyStartedByPlate"));
 		}
 		
 		CheckingAccount checkingAccount = this.checkingAccountService.findUserAccount(id);
 		if (checkingAccount == null) {
-			throw new AppRequestException("Cuenta Corriente no encontrada.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.accountNotFound"));
 		}
 		
 		if (checkingAccount.getBalance() < globalData.getFractionCost()) {
-			throw new AppRequestException("Saldo insuficiente para iniciar un estacionamiento.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("startParking.error.notEnoughBalance"));
 		}
 		
 		Parking parking = new Parking();
@@ -77,7 +78,7 @@ public class ParkingService {
 		parking.setPlate(plate.get());
 		
 		parkingRepository.save(parking);
-		return ResponseEntity.ok().body("Estacionamiento iniciado!");
+		return ResponseEntity.ok().body(MessageSourceUtils.getMessage("startParking.ok.started"));
 		
 	}
 	
