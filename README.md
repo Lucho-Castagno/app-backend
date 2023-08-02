@@ -35,6 +35,6 @@ Para poder levantar el proyecto se necesita tener instalado antes:
 Para hacer las pruebas con Junit debemos de haber realizado los pasos que se mencionaron anteriormente.
 Si se quiere hacer pruebas con Junit deberá darle click derecho a la carpeta de `src/test/java` y seleccionar la opción `Run As` --> `JUnit Test`, esto es para el caso de que se quieran probar todos los test que la carpeta contiene. En caso de que se quiera probar un archivo en particular se debe de hacer click derecho sobre ese archivo y desde ahí los mismos pasos.
 
-Para poder ver los informes de JaCoCo deberemos abrir un terminal (en mi caso se eligio la opcion `git bash here`) en la carpeta del proyecto (**app-backend**) y ejecutar el comando `./gradlew clean test jacocoTestRepost`. Este comando limpiará el proyecto, ejecutará las pruebas unitarias y luego generará el informe de cobertura de JaCoCo.
+Para poder ver los informes de JaCoCo deberemos abrir un terminal (en mi caso se eligio la opcion `git bash here`) en la carpeta del proyecto (**app-backend**) y ejecutar el comando `./gradlew clean test jacocoTestReport`. Este comando limpiará el proyecto, ejecutará las pruebas unitarias y luego generará el informe de cobertura de JaCoCo.
 
 Para visualizar los informes deberemos ingresar a la carpeta del proyecto `app-backend` --> `build` --> `reports` --> `jacoco` --> `test` --> `html`, en esta última carpeta encontraremos el archivo `index.html` el cual presenta el informe de JaCoCo en nuestro navegador web por defecto.

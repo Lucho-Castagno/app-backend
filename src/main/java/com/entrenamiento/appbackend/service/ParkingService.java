@@ -86,7 +86,7 @@ public class ParkingService {
 		
 		Optional<Parking> optionalParking = this.parkingRepository.findById(id);
 		if (optionalParking.isEmpty()) { 
-			throw new AppRequestException("No se encontro el estacionamiento indicado.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("finishParking.error.parkingNotFound"));
 		}
 		
 		/*
@@ -106,7 +106,7 @@ public class ParkingService {
 		
 		Parking parking = optionalParking.get();
 		if (parking.getEnd() != null) { 
-			throw new AppRequestException("El estacionamiento indicado ya finalizó.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("finishParking.error.parkingAlreadyFinished"));
 		}
 		
 		LocalDateTime endTime = sClock.localDateTimeNow();
@@ -134,7 +134,7 @@ public class ParkingService {
 		parking.setAmount(totalAmount);
 		parkingRepository.save(parking);
 		
-		return ResponseEntity.ok().body("Estacionamiento finalizado!");
+		return ResponseEntity.ok().body(MessageSourceUtils.getMessage("finishParking.ok.finished"));
 		
 	}
 	

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.entrenamiento.appbackend.MessageSourceUtils;
 import com.entrenamiento.appbackend.exception.AppRequestException;
 import com.entrenamiento.appbackend.model.Plate;
 import com.entrenamiento.appbackend.model.Usser;
@@ -30,13 +31,13 @@ public class PlateService {
 	public ResponseEntity<?> create(Long id, String cadena) {
 		
 		if (!plateNumberValidation(cadena)) {
-			throw new AppRequestException("Formato de patente: AAA000 ó AA000AA.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("createPlate.error.plateFormat"));
 		}
 		
 		Optional<Usser> usser = userRepository.findById(id);
 		
 		if (usser.isEmpty()) {
-			throw new AppRequestException("No se encontro al usuario.");
+			throw new AppRequestException(MessageSourceUtils.getMessage("createPlate.error.userNotFound"));
 		}
 		
 		String stringFormat = cadena.toUpperCase();
@@ -44,7 +45,7 @@ public class PlateService {
 		// este for es para verificar si la patente ya esta asociada al usuario.
 		for (Plate plate : usser.get().getPlates()) {
 			if (plate.getPlate().equals(stringFormat)) {
-				throw new AppRequestException("La patente ya esta asociada a este usuario.");
+				throw new AppRequestException(MessageSourceUtils.getMessage("createPlate.error.plateAlreadyAssigned"));
 			}
 		}
 		
