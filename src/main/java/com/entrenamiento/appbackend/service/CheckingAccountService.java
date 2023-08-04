@@ -26,10 +26,14 @@ public class CheckingAccountService {
 		this.accountMovementsRepository = accountMovementsRepository;
 	}
 	
-	public ResponseEntity<?> loadBalance(Long id, double amount) {
+	public ResponseEntity<?> loadBalance(Long id, Double amount) {
+		
+		if (amount.isNaN()) {
+			throw new AppRequestException(MessageSourceUtils.getMessage("loadBalance.error.notNumberReceived"));
+		}
 		
 		Optional<CheckingAccount> account = this.checkingAccountRepository.findById(id);
-		if(account.isEmpty()) {
+		if (account.isEmpty()) {
 			throw new AppRequestException(MessageSourceUtils.getMessage("loadBalance.error.accountNotFound"));
 		}
 		
